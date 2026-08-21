@@ -1,0 +1,66 @@
+# Secrets — never commit
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+*.pem
+*.key
+*.p12
+credentials.json
+secrets/
+service-account*.json
+
+# OS / editor
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Dependencies / build
+node_modules/
+dist/
+build/
+.next/
+out/
+coverage/
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+.eggs/
+
+# Logs & temp
+*.log
+tmp/
+temp/
+.cache/
+.turbo/
+
+# Local model / data dumps
+*.sqlite
+*.sqlite3
+data/raw/
+data/private/
+
+# Large local media (keep curated evidence; ignore dumps)
+evidence/_raw/
+*.mp4
+*.mov
+*.webm
+!evidence/**/.gitkeep
+
+# Notebooks checkpoints
+.ipynb_checkpoints/
