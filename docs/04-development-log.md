@@ -9,7 +9,15 @@ Repo skeleton, docs system, schedule.
 - Deliverables: `research/`, `docs/00-project-overview.md`, `SCHEDULE.md`
 
 ## Phase 2 — Architecture (22 Aug)
-TBD tomorrow.
+- Problem decomposition, MVP freeze, data model, API surface, ADRs
+- Deliverables: `architecture/*`, `docs/03-architecture.md`
+- Stack locked: FastAPI + SQLite + React + rules/EV + optional LLM + Razorpay test-mode Payment Links
 
 ## Phase 3 — MVP (23–26 Aug)
-TBD.
+- Aug 23: Skeleton  
+- Aug 24: Core workflow  
+- Aug 25: Intelligence  
+- Aug 26: Integration → ugly but working  
+
+## Phase 4+ — Iteration → eval → polish → submit
+Per `SCHEDULE.md`.

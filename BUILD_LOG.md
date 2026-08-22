@@ -107,3 +107,31 @@ Complete Aug 21 deliverable: **Final PS + research notes**.
 - Ready `src/` skeleton for Aug 23
 
 ---
+
+## 22 August 2026 — Day 02 (architecture + MVP freeze)
+
+### Goal
+Turn Rebound into a buildable system design without writing product features yet.
+
+### What I built
+- `architecture/problem-decomposition.md` — jobs, loop, modules, actions
+- `architecture/mvp-scope.md` — in/out freeze, Aug 26 DoD, metrics
+- `architecture/system-overview.md` — diagrams + safety + package layout
+- `architecture/data-model.md` + `api-surface.md`
+- `architecture/ADRs.md` — seven decisions (SQLite, policy gate, no agent framework, …)
+- Updated `docs/03-architecture.md`, overview stack lock, baselines
+
+### Decisions
+- Headline metric: `lift_value` vs Baseline A
+- Payment Link = primary test-mode side effect; outreach simulated
+- Rules/EV default proposer; LLM optional behind flag
+- Aug 23 coding starts from documented package layout
+
+### Evidence
+- `architecture/README.md` and linked docs
+- `docs/build-log/day-02.md`
+
+### Next (Aug 23)
+- Skeleton: FastAPI + SQLite models + React shell + seed stub
+
+---

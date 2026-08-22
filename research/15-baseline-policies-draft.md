@@ -1,44 +1,71 @@
-# Baseline policies (draft for Aug 22 architecture)
+# Baseline policies (locked for MVP eval)
 
-> Enough to lock evaluation intent on Aug 21. Flesh out thresholds tomorrow.
+> Refined Day 02. Used by `eval` module.
 
 ## North-star
 
-**Incremental recovered value** on a held-out batch:
+```text
+lift_value = net_value(Rebound) - net_value(Baseline A)
 
-`lift = value_recovered(Rebound) - value_recovered(baseline_policy)`
+net_value = recovered_value - intervention_cost
+```
 
-Also report: recovery rate, actions taken, stops, escalations, estimated intervention cost.
+Report also: recovery_rate, stop_rate, escalation_rate, simulated_share.
+
+## Cost table (demo units)
+
+| Action | Cost (paise-equivalent demo units) |
+| --- | --- |
+| `silent_retry` | 50 |
+| `payment_link` | 200 |
+| `notify_update_method` | 300 |
+| `escalate` | 100 |
+| `stop` | 0 |
+
+Tune in config; keep constant across Rebound and baselines in a run.
 
 ## Baseline A — Fixed ladder (primary)
 
-1. On failure → silent retry up to N times (fixed schedule)  
-2. Then → always issue payment-method update / payment link  
-3. Then → stop  
+Parameters: `N_RETRY=2`
 
-No EV. No “skip low-value.” No channel choice.
+```text
+if attempt_n < N_RETRY:
+    action = silent_retry
+elif not sent_update_link:
+    action = payment_link   # or notify_update_method if links disabled
+else:
+    action = stop
+```
 
-## Baseline B — Always aggressive (stress)
+No EV. No skip of low-value cases.
 
-Always take the richest allowed outreach/action until hard caps.  
-Shows whether Rebound’s **stops** reduce wasted cost.
+## Baseline B — Always aggressive (stretch)
 
-## Rebound policy sketch
+Prefer `notify_update_method` then `payment_link` until hard caps (`max_actions=5`), never voluntary early stop unless exhausted.
 
-For each case compute approx:
+## Rebound policy
 
-`EV(action) = P(recover | action, x) * value(x) - cost(action, x)`
+1. Compute EV for each allowlisted action using scorer outputs.  
+2. Drop actions failing hard caps (retry/notify counts).  
+3. Pick max-EV action with `ev >= min_ev` and `confidence >= min_confidence`.  
+4. Else `stop`. High-value + low-confidence → `escalate` if configured.  
 
-Pick allowlisted action with best EV if:
+### Default thresholds (starting point)
 
-- above confidence / EV threshold  
-- under retry + communication + discount caps  
-- else **stop** or **escalate**
-
-## Honest labels
-
-| Outcome type | Label in reports |
+| Knob | Default |
 | --- | --- |
-| Test-mode payment success | recovered (test-mode) |
-| Simulated outreach → assumed convert | simulated (clearly marked) |
-| Stop with no action | correct stop / missed opportunity (analyze both) |
+| `min_ev` | 0 |
+| `min_confidence` | 0.35 |
+| `max_silent_retries` | 3 |
+| `max_notifies` | 2 |
+| `escalate_if_value_paise_ge` | 500000 (₹5000) and confidence < 0.5 |
+
+## Recovery labeling
+
+| Source | Label |
+| --- | --- |
+| Payment Link paid in test-mode | `test_mode` recovered |
+| Synthetic outcome model / scripted resolve | `simulated` recovered |
+| Stop without recovery | not recovered |
+
+Synthetic generator must document how “true recovery” labels are assigned so eval is reproducible.

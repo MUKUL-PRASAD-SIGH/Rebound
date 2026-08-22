@@ -1,47 +1,67 @@
 # 03 — Architecture
 
-> Current system design. Update when the design changes; note the date.
+> **Status: Locked for MVP — 22 Aug 2026**  
+> Detail lives in [`architecture/`](../architecture/README.md).
 
-## Status
-
-Draft — awaiting problem statement.
-
-## High-level diagram
+## High-level
 
 ```text
-[User] → [App] → [Core logic] → [Razorpay APIs]
-                      ↓
-                 [AI / agents?]
-                      ↓
-                 [Store / logs]
+Razorpay test-mode / synthetic
+        ↓ ingest (idempotent)
+Case + features
+        ↓ score EV
+Proposal (rules | model | optional LLM JSON)
+        ↓ deterministic policy gate
+Executor (Payment Link | dry-run | simulated notify | stop)
+        ↓
+Outcome + append-only audit
+        ↓
+Eval: Rebound vs Baseline A → lift
+        ↓
+Ops UI (React)
 ```
-
-Replace with a real diagram in `/architecture` once PS is locked.
 
 ## Components
 
-| Component | Responsibility | Tech (tentative) |
+| Component | Responsibility | Tech |
 | --- | --- | --- |
-| | | |
+| API | Ingest, decide, execute, eval | FastAPI |
+| Scorer / proposer | P(recover), EV, structured proposal | sklearn/logistic + rules; optional LLM |
+| Policy engine | Allowlist, caps, stop/escalate | Pure Python |
+| Executor | Razorpay Payment Links + simulators | razorpay SDK / HTTP |
+| Store | Cases, decisions, audit, eval | SQLite (+ SQLAlchemy) |
+| Web | Queue, explain, audit, eval | React + TypeScript |
 
 ## Data flow
 
-1. …
-2. …
-3. …
+1. Event or batch row → upsert `Case`  
+2. Build features → score actions  
+3. Propose allowlisted action  
+4. Gate → Decision  
+5. Execute (mode: dry_run / test_mode / simulated)  
+6. Record Outcome + AuditEvent  
+7. Batch EvalRun computes **lift_value**
 
-## Key design decisions (ADRs light)
+## Key design decisions
 
-| Date | Decision | Alternatives | Why |
-| --- | --- | --- | --- |
-| | | | |
+See [`architecture/ADRs.md`](../architecture/ADRs.md) (SQLite, mandatory policy, no agent framework, Payment Link primary, simulated outreach, baseline-first eval).
 
 ## Risks & mitigations
 
 | Risk | Mitigation |
 | --- | --- |
-| | |
+| Thesis collapses to “AI retry” | Lift vs baseline; `stop` first-class; diff doc |
+| Duplicate side effects | Idempotency keys on events + attempts |
+| LLM unsafe actions | No direct tool access; schema + policy |
+| Dishonest metrics | `test_mode` vs `simulated` labels |
+| Slip schedule | MVP scope freeze file |
 
 ## Non-goals (architecture)
 
-- …
+- Microservices, queues, multi-tenant SaaS polish  
+- Live messaging providers in MVP  
+- Recreating Razorpay Intelligent Retry / Agent Studio  
+
+## MVP freeze
+
+[`architecture/mvp-scope.md`](../architecture/mvp-scope.md)

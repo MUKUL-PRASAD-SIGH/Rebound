@@ -71,8 +71,8 @@ After Aug 26: **9 days left to make it excellent.**
 
 | When | Status / do |
 | --- | --- |
-| **Aug 21** | **DONE** — Track 03 locked as **Rebound**; research notes complete |
-| **Aug 22** | Problem decomposition → architecture → MVP in/out scope → batch metrics |
-| **Aug 23** | Start skeleton in `src/` |
+| **Aug 21** | **DONE** — Track 03 locked as **Rebound** |
+| **Aug 22** | **DONE** — Decomposition + architecture + MVP freeze |
+| **Aug 23** | Skeleton in `src/` (API + DB + React shell) |
 
-Lock: [`research/12-final-selection.md`](research/12-final-selection.md) · Overview: [`docs/00-project-overview.md`](docs/00-project-overview.md)
+Architecture: [`architecture/README.md`](architecture/README.md) · MVP: [`architecture/mvp-scope.md`](architecture/mvp-scope.md)

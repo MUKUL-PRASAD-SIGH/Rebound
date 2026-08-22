@@ -1,6 +1,6 @@
 # 00 — Project Overview
 
-> One-page truth. Locked 21 Aug 2026.
+> One-page truth. PS locked 21 Aug 2026 · Architecture locked 22 Aug 2026.
 
 ## Working title
 
@@ -22,7 +22,7 @@ An expected-value decision layer that detects revenue at risk, chooses bounded r
 
 ## Solution (hypothesis)
 
-Rebound: detect → score recoverability & intervention EV → agent proposes structured action → **deterministic guardrails** → allowlisted Razorpay action → outcome + audit → incremental lift vs fixed baseline.
+Rebound: detect → score recoverability & intervention EV → propose structured action → **deterministic guardrails** → allowlisted Razorpay action → outcome + audit → incremental lift vs fixed baseline.
 
 ## Target user
 
@@ -30,41 +30,42 @@ Merchant ops / revenue teams (demo persona: a test-mode merchant with a batch of
 
 ## Scope for the buildathon
 
-See [`SCHEDULE.md`](../SCHEDULE.md).
+See [`SCHEDULE.md`](../SCHEDULE.md) and frozen [`architecture/mvp-scope.md`](../architecture/mvp-scope.md).
 
-### In scope (MVP target by Aug 26)
-- Ingest failure / at-risk events (synthetic + webhook-shaped)
+### In scope (MVP by Aug 26)
+- Synthetic batch ingest (≥50 cases) + webhook-shaped endpoint
 - EV / policy decision engine with stopping rules
-- Allowlisted actions (e.g. retry signal, payment-link recovery, stop/escalate)
-- Ops UI: queue, decision explain, audit trail
-- Batch evaluation: recovery rate + incremental value vs baseline
+- Allowlisted actions: `silent_retry`, `payment_link`, `notify_update_method` (sim), `escalate`, `stop`
+- Ops UI: queue, explain, audit, eval
+- Batch evaluation: **lift_value** vs Baseline A
 
 ### Out of scope
-- Recreating Razorpay core retries or cloning Agent Studio voice recovery
-- Live WhatsApp/voice as a required dependency
-- Open-ended research after Aug 22
-- Framework tourism
+- Live WhatsApp/voice; Agent Studio clones; replacing Razorpay retries
+- Open-ended research; agent-framework tourism
 
 ## Success criteria
 
 | Criterion | How we'll know |
 | --- | --- |
 | Demo works end-to-end | Ugly MVP by Aug 26; polished by Sep 3 |
-| Clear Razorpay relevance | Test-mode / webhook-compatible loop |
-| Measurable insight | Incremental recovered value vs baseline on held-out batch |
-| Safety | No unrestricted LLM money actions; audit trail |
+| Clear Razorpay relevance | Test-mode Payment Link and/or documented dry-run |
+| Measurable insight | `lift_value` on held-out/seed batch |
+| Safety | Policy gate + audit; no unrestricted LLM money actions |
 | Proof trail | Build log + commits + evidence |
 
-## Stack (tentative — finalize Aug 22)
+## Stack (locked 22 Aug)
 
-| Layer | Likely choice |
+| Layer | Choice |
 | --- | --- |
 | API | FastAPI |
-| ML | sklearn / XGBoost (+ simple baselines) |
-| Agent/tools | Lightweight tool-calling; no framework maze |
+| ML / decide | Rules + EV; sklearn/logistic (or XGBoost if fits); optional LLM JSON proposer |
+| Policy | Pure Python deterministic engine |
 | UI | React + TypeScript |
-| Data | Postgres or SQLite for hackathon speed |
-| Payments | Razorpay test-mode keys |
+| Data | SQLite + SQLAlchemy |
+| Payments | Razorpay test-mode (Payment Links primary) |
+| Agent frameworks | **None** for MVP |
+
+Architecture: [`architecture/README.md`](../architecture/README.md)
 
 ## Links
 
@@ -72,8 +73,9 @@ See [`SCHEDULE.md`](../SCHEDULE.md).
 | --- | --- |
 | Research lock | [`research/12-final-selection.md`](../research/12-final-selection.md) |
 | How I chose | [`research/13-how-i-chose-the-ps.md`](../research/13-how-i-chose-the-ps.md) |
+| Architecture | [`architecture/README.md`](../architecture/README.md) |
+| MVP scope | [`architecture/mvp-scope.md`](../architecture/mvp-scope.md) |
 | Schedule | [`SCHEDULE.md`](../SCHEDULE.md) |
 | Demo | TBD |
 | Demo video | TBD |
-| Medium journey | TBD |
-| Public repo | Private until submission-ready |
+| Public repo | https://github.com/MUKUL-PRASAD-SIGH/razorpay-buildathon-2026 |
