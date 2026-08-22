@@ -21,6 +21,9 @@ This repo uses a **3-layer** evidence workflow for the Razorpay Buildathon.
 1. Create / update `docs/build-log/day-NN.md`
 2. Append the same day to root `BUILD_LOG.md` (never edit past days)
 3. Drop screenshots / benchmarks into `evidence/…` with date prefixes
+4. Commit with day-tagged message (`docs:` / `feat:` / `fix:`) and push when the day’s work is closed
+
+**Progress through Day 03:** see [`build-log/README.md`](./build-log/README.md).
 
 ### Living docs (update when reality changes)
 

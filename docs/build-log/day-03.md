@@ -4,28 +4,46 @@
 Skeleton: backend + DB + API routes + frontend shell so the repo runs with empty paths wired.
 
 ## What I did
-- Python package `src/rebound/*` (config, db models, schemas, module stubs)
-- FastAPI app `src/apps/api/main.py` — health, metrics, cases, audit, synthetic ingest, stubs for decide/execute/eval/webhook
-- SQLite + SQLAlchemy models per architecture data model
+- Python package `src/rebound/*` (config, db models, schemas, module stubs: ingest/features/scoring/propose/policy/execute/audit/eval)
+- FastAPI app `src/apps/api/main.py`
+  - Live: `GET /health`, `GET /metrics/summary`, `GET /cases`, `GET /cases/{id}`, `GET /cases/{id}/audit`, `POST /ingest/synthetic`
+  - Stubs (intentional): decide, execute, eval, webhook ingest
+- SQLite + SQLAlchemy models per `architecture/data-model.md`
 - Policy allowlist gate stub; audit append helper
-- Sample batch + `seed_batch.py`
+- Sample batch (`src/scripts/sample_batch.json`) + `seed_batch.py`
 - React/Vite ops UI: Home, Cases, Case detail, Eval, Audit placeholders
-- `requirements.txt` + web `package.json`
+- `requirements.txt`, `src/apps/web/package.json`, `src/README.md`
+- Root README “How to run (Day 03 skeleton)”
 
 ## Decisions
-- `--app-dir src` so imports are `apps.api.main` / `rebound.*`
-- Vite proxies `/api` → `:8000`
-- Synthetic ingest works today; decide/execute remain stubs until Day 04–05
+- Run API with `--app-dir src` (`apps.api.main:app`, imports `rebound.*`)
+- Vite proxies `/api` → backend `:8000`
+- Synthetic ingest works today; decide/execute remain stubs until later days
+- Commit style for this day: `feat: Day 03 skeleton — …`
 
 ## Problems
-- None blocking
+- Port 8000 sometimes occupied locally → verified on `:8001` during smoke test (same app)
 
 ## Experiments
-- Verified API health + synthetic seed against local uvicorn
+- Smoke test: health → synthetic ingest (5 cases) → metrics (`cases_total=5`) → list cases
 
 ## Evidence
-- `src/` tree
-- Local: `GET /api/v1/health`, `POST /api/v1/ingest/synthetic`
+- Code: `src/` tree (commit `70162c4`)
+- Docs: this file + `BUILD_LOG.md` Day 03 section
+- Local verification notes above
 
-## Tomorrow (Aug 24 — Core workflow)
-- Happy-path case loop without ML: ingest → list → decide stub→real rules ladder → execute dry_run → audit visible in UI
+## Done for Day 03
+- [x] API boots with health route  
+- [x] DB models created on startup  
+- [x] Synthetic seed path works  
+- [x] Cases listable via API  
+- [x] React shell pages exist  
+- [x] Run instructions in README  
+- [x] Day log + BUILD_LOG updated  
+- [x] Pushed to `origin/main`  
+
+## Stop line
+**Day 03 ends here.** No decide/execute/eval implementation in this day.
+
+## Next (only when starting Day 04)
+- Happy-path: rules ladder decide → dry_run execute → audit in UI

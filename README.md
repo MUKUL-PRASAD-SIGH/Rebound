@@ -104,7 +104,7 @@ razorpay-buildathon-2026/
 └── src/                      # Day 03+ product code
 ```
 
-**Next:** Aug 23 skeleton — see [`architecture/mvp-scope.md`](architecture/mvp-scope.md).
+**Next:** Day 03 skeleton is **complete**. See [`docs/build-log/day-03.md`](docs/build-log/day-03.md). Day 04+ not started.
 
 ---
 
@@ -114,7 +114,8 @@ razorpay-buildathon-2026/
 | --- | --- | --- |
 | Aug 21 | PS + research | ✅ Locked Rebound |
 | Aug 22 | Decomposition + architecture | ✅ Architecture + MVP scope |
-| Aug 23–26 | Core development | Skeleton ✅ · workflow → intelligence → integrate |
+| Aug 23 | Skeleton | ✅ API + DB + React shell |
+| Aug 24–26 | Core → intelligence → integrate | Not started |
 | Aug 27–30 | Iteration | Strong V2/V3 |
 | Aug 31–Sep 1 | Evaluation | Benchmarks + edge cases |
 | Sep 2–3 | Differentiation + polish | Demo-ready |

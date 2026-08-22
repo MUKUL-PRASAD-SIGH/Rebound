@@ -32,8 +32,7 @@ Problem decomposition + architecture + MVP scope freeze for Rebound (no feature 
 - `research/15-baseline-policies-draft.md`
 
 ## Tomorrow (Aug 23 — Skeleton)
-- Create `src/apps/api` + `src/rebound/*` package stubs
-- DB models + health route
-- React app shell with placeholder pages
-- Seed script stub
-- Run locally: API up + empty UI
+- ~~Create `src/apps/api` + `src/rebound/*` package stubs~~ → **Done (Day 03)**
+- ~~DB models + health route~~ → **Done**
+- ~~React app shell + seed~~ → **Done**
+- See [`day-03.md`](./day-03.md)

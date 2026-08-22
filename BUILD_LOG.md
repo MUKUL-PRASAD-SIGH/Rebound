@@ -158,6 +158,19 @@ Repo runs with empty paths wired: API + DB + UI shell.
 - `docs/build-log/day-03.md`
 
 ### Next (Aug 24)
-- Core happy-path workflow (rules ladder decide + dry_run execute + UI)
+- Core happy-path workflow (rules ladder decide + dry_run execute + UI) — **not started; Day 03 closed**
+
+---
+
+## Documentation checkpoint (Day 03 close)
+
+Day-wise logs through Day 03 are the source of truth:
+
+| Day | Log |
+| --- | --- |
+| 00–03 | [`docs/build-log/`](docs/build-log/README.md) |
+| Append-only | this file |
+
+No Day 04 work in this checkpoint.
 
 ---
