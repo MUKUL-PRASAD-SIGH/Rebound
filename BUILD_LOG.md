@@ -135,3 +135,29 @@ Turn Rebound into a buildable system design without writing product features yet
 - Skeleton: FastAPI + SQLite models + React shell + seed stub
 
 ---
+
+## 23 August 2026 — Day 03 (skeleton)
+
+### Goal
+Repo runs with empty paths wired: API + DB + UI shell.
+
+### What I built
+- `src/rebound/` packages (db, schemas, policy/audit stubs, …)
+- FastAPI: health, metrics, cases, audit, synthetic ingest; stubs for decide/execute/eval/webhook
+- React/Vite ops UI (Home / Cases / Detail / Eval / Audit)
+- `requirements.txt`, sample batch, seed script
+- Verified: health ok, seeded 5 cases, metrics reflect counts
+
+### Decisions
+- Run API with `--app-dir src`
+- Vite proxy `/api` → backend
+- Decide/execute deferred to Day 04–05 (intentional stubs)
+
+### Evidence
+- Local API verification (health + ingest + cases)
+- `docs/build-log/day-03.md`
+
+### Next (Aug 24)
+- Core happy-path workflow (rules ladder decide + dry_run execute + UI)
+
+---

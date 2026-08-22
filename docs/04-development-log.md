@@ -14,7 +14,7 @@ Repo skeleton, docs system, schedule.
 - Stack locked: FastAPI + SQLite + React + rules/EV + optional LLM + Razorpay test-mode Payment Links
 
 ## Phase 3 — MVP (23–26 Aug)
-- Aug 23: Skeleton  
+- Aug 23: Skeleton ✅ (API + SQLite + React shell + seed)
 - Aug 24: Core workflow  
 - Aug 25: Intelligence  
 - Aug 26: Integration → ugly but working  

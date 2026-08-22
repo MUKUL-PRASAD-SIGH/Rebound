@@ -52,8 +52,10 @@ temp/
 # Local model / data dumps
 *.sqlite
 *.sqlite3
-data/raw/
-data/private/
+rebound.db
+src/apps/web/node_modules/
+src/apps/web/dist/
+
 
 # Large local media (keep curated evidence; ignore dumps)
 evidence/_raw/

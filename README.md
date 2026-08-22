@@ -1,7 +1,7 @@
 # Rebound — Razorpay AI Buildathon 2026
 
 [![Track](https://img.shields.io/badge/Track-03%20AI%20Revenue%20Recovery-0A2540?style=for-the-badge)](https://razorpay.com/buildathon/)
-[![Status](https://img.shields.io/badge/Status-Architecture%20Locked%20·%20Pre--MVP-2E7D32?style=for-the-badge)](#project-status)
+[![Status](https://img.shields.io/badge/Status-Skeleton%20Running%20·%20MVP%20Build-1565C0?style=for-the-badge)](#project-status)
 [![Stack](https://img.shields.io/badge/Stack-FastAPI%20·%20ML%20·%20React-136FEC?style=for-the-badge)](#planned-stack)
 [![License](https://img.shields.io/badge/License-Private%20Lab-6B7280?style=for-the-badge)](#safety--secrets)
 
@@ -12,7 +12,7 @@
 
 <p align="center">
   <a href="https://razorpay.com/buildathon/"><img src="https://img.shields.io/badge/Razorpay-AI%20Buildathon%202026-072654?logo=razorpay&logoColor=white" alt="Razorpay Buildathon" /></a>
-  <img src="https://img.shields.io/badge/Day-02%20Complete-success" alt="Day 02 complete" />
+  <img src="https://img.shields.io/badge/Day-03%20Complete-success" alt="Day 03 complete" />
   <img src="https://img.shields.io/badge/MVP_target-26%20Aug%202026-blue" alt="MVP target" />
   <img src="https://img.shields.io/badge/Submit-5%20Sep%202026-orange" alt="Submit date" />
   <img src="https://img.shields.io/badge/₹0-test--mode%20first-lightgrey" alt="Zero cost build" />
@@ -49,7 +49,8 @@ Full lock write-up: [`research/12-final-selection.md`](research/12-final-selecti
 | All 5 tracks researched | ✅ Done | 21 Aug 2026 |
 | Problem statement locked | ✅ **Track 03 / Rebound** | 21 Aug 2026 |
 | Architecture + MVP scope | ✅ Done | 22 Aug 2026 |
-| End-to-end MVP (ugly but working) | Planned | 23–26 Aug 2026 |
+| Skeleton (API + UI) | ✅ Done | 23 Aug 2026 |
+| End-to-end MVP (ugly but working) | In progress | 23–26 Aug 2026 |
 | Iteration V2/V3 | Planned | 27–30 Aug 2026 |
 | Serious evaluation | Planned | 31 Aug–1 Sep 2026 |
 | Differentiation + polish | Planned | 2–3 Sep 2026 |
@@ -113,7 +114,7 @@ razorpay-buildathon-2026/
 | --- | --- | --- |
 | Aug 21 | PS + research | ✅ Locked Rebound |
 | Aug 22 | Decomposition + architecture | ✅ Architecture + MVP scope |
-| Aug 23–26 | Core development | End-to-end MVP |
+| Aug 23–26 | Core development | Skeleton ✅ · workflow → intelligence → integrate |
 | Aug 27–30 | Iteration | Strong V2/V3 |
 | Aug 31–Sep 1 | Evaluation | Benchmarks + edge cases |
 | Sep 2–3 | Differentiation + polish | Demo-ready |
@@ -149,6 +150,31 @@ Details: [`architecture/`](architecture/README.md) · freeze: [`architecture/mvp
 
 ---
 
+## How to run (Day 03 skeleton)
+
+### API
+
+```bash
+python -m pip install -r requirements.txt
+python -m uvicorn apps.api.main:app --app-dir src --reload --port 8000
+```
+
+- Health: http://127.0.0.1:8000/api/v1/health  
+- Seed: `python src/scripts/seed_batch.py` (API must be up)  
+- Or `POST http://127.0.0.1:8000/api/v1/ingest/synthetic`
+
+### Web
+
+```bash
+cd src/apps/web
+npm install
+npm run dev
+```
+
+Open http://127.0.0.1:5173 — Vite proxies `/api` to the backend.
+
+---
+
 ## How to follow along
 
 ```bash
@@ -180,5 +206,5 @@ Private lab → curated public artifact near submission.
 ---
 
 <p align="center">
-  <sub>Day 02 complete · Skeleton 23 Aug · MVP by 26 Aug · Submit by 5 Sep</sub>
+  <sub>Day 03 complete · Core workflow 24 Aug · MVP by 26 Aug · Submit by 5 Sep</sub>
 </p>
