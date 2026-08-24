@@ -74,6 +74,7 @@ After Aug 26: **9 days left to make it excellent.**
 | **Aug 21** | **DONE** — Track 03 locked as **Rebound** |
 | **Aug 22** | **DONE** — Decomposition + architecture + MVP freeze |
 | **Aug 23** | **DONE** — Skeleton API + DB + React shell (closed; see `docs/build-log/day-03.md`) |
-| **Aug 24+** | Not started |
+| **Aug 24** | **DONE** — Core workflow decide → gate → execute → audit |
+| **Aug 25+** | Intelligence / integrate — not started |
 
 Architecture: [`architecture/README.md`](architecture/README.md) · MVP: [`architecture/mvp-scope.md`](architecture/mvp-scope.md)

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -13,16 +14,21 @@ from rebound.audit import append_audit
 from rebound.config import get_settings
 from rebound.db import Case, EvalRun, get_db, init_db
 from rebound.db.models import AuditEvent, Decision
-from rebound.schemas import (
+from rebound.ingest import upsert_from_webhook_payload
+from rebound.schemas.api import (
     AuditEventOut,
     CaseDetailOut,
     CaseOut,
+    DecideResponse,
+    ExecuteResponse,
     HealthResponse,
     MetricsSummary,
     StubMessage,
     SyntheticIngestResponse,
+    WebhookIngestResponse,
 )
-from rebound.schemas.enums import AuditKind, CaseSource, CaseStatus
+from rebound.schemas.enums import AuditKind, CaseSource, CaseStatus, GateResult
+from rebound.workflow import decide_case, execute_latest_decision
 
 settings = get_settings()
 
@@ -76,8 +82,6 @@ def get_case(case_id: str, db: Session = Depends(get_db)) -> CaseDetailOut:
     )
     gate = None
     if latest:
-        from rebound.schemas.enums import GateResult
-
         try:
             gate = GateResult(latest.gate_result)
         except ValueError:
@@ -124,7 +128,6 @@ def case_audit(case_id: str, db: Session = Depends(get_db)) -> list[AuditEventOu
 
 @app.post("/api/v1/ingest/synthetic", response_model=SyntheticIngestResponse)
 def ingest_synthetic(db: Session = Depends(get_db)) -> SyntheticIngestResponse:
-    """Seed a small demo batch if empty / always append unique keys."""
     sample_path = Path(__file__).resolve().parents[2] / "scripts" / "sample_batch.json"
     if not sample_path.exists():
         raise HTTPException(status_code=500, detail="sample_batch.json missing")
@@ -160,31 +163,57 @@ def ingest_synthetic(db: Session = Depends(get_db)) -> SyntheticIngestResponse:
     return SyntheticIngestResponse(inserted=inserted, skipped=skipped, case_ids=ids)
 
 
-@app.post("/api/v1/ingest/webhooks/razorpay", response_model=StubMessage)
-def ingest_webhook_stub() -> StubMessage:
-    return StubMessage(
-        detail="Webhook ingest scaffolded — signature verify + case upsert on Day 04",
-        next="POST payload shape accepted later; use /ingest/synthetic for now",
+@app.post("/api/v1/ingest/webhooks/razorpay", response_model=WebhookIngestResponse)
+def ingest_webhook(payload: dict[str, Any], db: Session = Depends(get_db)) -> WebhookIngestResponse:
+    case, created = upsert_from_webhook_payload(db, payload)
+    db.commit()
+    return WebhookIngestResponse(case_id=case.id, case_key=case.case_key, created=created)
+
+
+@app.post("/api/v1/cases/{case_id}/decide", response_model=DecideResponse)
+def decide(case_id: str, auto_execute: bool = False, db: Session = Depends(get_db)) -> DecideResponse:
+    case = db.get(Case, case_id)
+    if not case:
+        raise HTTPException(status_code=404, detail="case not found")
+    result = decide_case(db, case, auto_execute=auto_execute)
+    return DecideResponse(
+        case_id=result.case_id,
+        proposal_id=result.proposal_id,
+        decision_id=result.decision_id,
+        proposed_action=result.proposed_action,
+        gated_action=result.gated_action,
+        gate_result=result.gate_result,
+        gate_reason=result.gate_reason,
+        rationale=result.rationale,
+        confidence=result.confidence,
+        ev=result.ev,
+        executed=result.executed,
+        attempt_id=result.attempt_id,
     )
 
 
-@app.post("/api/v1/cases/{case_id}/decide", response_model=StubMessage)
-def decide_stub(case_id: str, db: Session = Depends(get_db)) -> StubMessage:
-    if not db.get(Case, case_id):
+@app.post("/api/v1/cases/{case_id}/execute", response_model=ExecuteResponse)
+def execute(case_id: str, db: Session = Depends(get_db)) -> ExecuteResponse:
+    case = db.get(Case, case_id)
+    if not case:
         raise HTTPException(status_code=404, detail="case not found")
-    return StubMessage(detail="decide pipeline scaffolded — wire propose→gate→execute on Day 04/05")
-
-
-@app.post("/api/v1/cases/{case_id}/execute", response_model=StubMessage)
-def execute_stub(case_id: str, db: Session = Depends(get_db)) -> StubMessage:
-    if not db.get(Case, case_id):
-        raise HTTPException(status_code=404, detail="case not found")
-    return StubMessage(detail="execute scaffolded — Payment Link / dry_run on Day 04")
+    try:
+        attempt = execute_latest_decision(db, case)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return ExecuteResponse(
+        attempt_id=attempt.id,
+        case_id=case.id,
+        action=attempt.action,
+        mode=attempt.mode,
+        response=json.loads(attempt.response_json or "{}"),
+        razorpay_payment_link_id=attempt.razorpay_payment_link_id,
+    )
 
 
 @app.post("/api/v1/eval/runs", response_model=StubMessage)
 def eval_stub() -> StubMessage:
-    return StubMessage(detail="eval runner scaffolded — Baseline A vs Rebound lift on Day 05/06")
+    return StubMessage(detail="eval runner — Day 05/06 (Baseline A vs Rebound lift)")
 
 
 @app.get("/api/v1/eval/runs/{run_id}", response_model=StubMessage)

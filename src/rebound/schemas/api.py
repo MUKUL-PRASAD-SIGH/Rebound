@@ -75,3 +75,34 @@ class SyntheticIngestResponse(BaseModel):
 class StubMessage(BaseModel):
     detail: str
     next: str | None = None
+
+
+class DecideResponse(BaseModel):
+    case_id: str
+    proposal_id: str
+    decision_id: str
+    proposed_action: str
+    gated_action: str
+    gate_result: str
+    gate_reason: str
+    rationale: str
+    confidence: float
+    ev: float
+    executed: bool = False
+    attempt_id: str | None = None
+
+
+class ExecuteResponse(BaseModel):
+    attempt_id: str
+    case_id: str
+    action: str
+    mode: str
+    response: dict[str, Any]
+    razorpay_payment_link_id: str | None = None
+
+
+class WebhookIngestResponse(BaseModel):
+    case_id: str
+    case_key: str
+    created: bool
+

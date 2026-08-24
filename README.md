@@ -1,7 +1,7 @@
 # Rebound — Razorpay AI Buildathon 2026
 
 [![Track](https://img.shields.io/badge/Track-03%20AI%20Revenue%20Recovery-0A2540?style=for-the-badge)](https://razorpay.com/buildathon/)
-[![Status](https://img.shields.io/badge/Status-Skeleton%20Running%20·%20MVP%20Build-1565C0?style=for-the-badge)](#project-status)
+[![Status](https://img.shields.io/badge/Status-Core%20Workflow%20Live%20·%20Day%2004-2E7D32?style=for-the-badge)](#project-status)
 [![Stack](https://img.shields.io/badge/Stack-FastAPI%20·%20ML%20·%20React-136FEC?style=for-the-badge)](#planned-stack)
 [![License](https://img.shields.io/badge/License-Private%20Lab-6B7280?style=for-the-badge)](#safety--secrets)
 
@@ -12,7 +12,7 @@
 
 <p align="center">
   <a href="https://razorpay.com/buildathon/"><img src="https://img.shields.io/badge/Razorpay-AI%20Buildathon%202026-072654?logo=razorpay&logoColor=white" alt="Razorpay Buildathon" /></a>
-  <img src="https://img.shields.io/badge/Day-03%20Complete-success" alt="Day 03 complete" />
+  <img src="https://img.shields.io/badge/Day-04%20Complete-success" alt="Day 04 complete" />
   <img src="https://img.shields.io/badge/MVP_target-26%20Aug%202026-blue" alt="MVP target" />
   <img src="https://img.shields.io/badge/Submit-5%20Sep%202026-orange" alt="Submit date" />
   <img src="https://img.shields.io/badge/₹0-test--mode%20first-lightgrey" alt="Zero cost build" />
@@ -50,7 +50,8 @@ Full lock write-up: [`research/12-final-selection.md`](research/12-final-selecti
 | Problem statement locked | ✅ **Track 03 / Rebound** | 21 Aug 2026 |
 | Architecture + MVP scope | ✅ Done | 22 Aug 2026 |
 | Skeleton (API + UI) | ✅ Done | 23 Aug 2026 |
-| End-to-end MVP (ugly but working) | In progress | 23–26 Aug 2026 |
+| Core workflow (decide/execute/audit) | ✅ Done | 24 Aug 2026 |
+| End-to-end MVP (ugly but working) | In progress | 25–26 Aug 2026 |
 | Iteration V2/V3 | Planned | 27–30 Aug 2026 |
 | Serious evaluation | Planned | 31 Aug–1 Sep 2026 |
 | Differentiation + polish | Planned | 2–3 Sep 2026 |
@@ -104,7 +105,7 @@ razorpay-buildathon-2026/
 └── src/                      # Day 03+ product code
 ```
 
-**Next:** Day 03 skeleton is **complete**. See [`docs/build-log/day-03.md`](docs/build-log/day-03.md). Day 04+ not started.
+**Next:** Day 04 core workflow is **complete**. See [`docs/build-log/day-04.md`](docs/build-log/day-04.md). Day 05+ (intelligence/eval) not started.
 
 ---
 
@@ -115,7 +116,8 @@ razorpay-buildathon-2026/
 | Aug 21 | PS + research | ✅ Locked Rebound |
 | Aug 22 | Decomposition + architecture | ✅ Architecture + MVP scope |
 | Aug 23 | Skeleton | ✅ API + DB + React shell |
-| Aug 24–26 | Core → intelligence → integrate | Not started |
+| Aug 24 | Core workflow | ✅ Decide → gate → execute → audit |
+| Aug 25–26 | Intelligence → integrate | Not started |
 | Aug 27–30 | Iteration | Strong V2/V3 |
 | Aug 31–Sep 1 | Evaluation | Benchmarks + edge cases |
 | Sep 2–3 | Differentiation + polish | Demo-ready |
@@ -207,5 +209,5 @@ Private lab → curated public artifact near submission.
 ---
 
 <p align="center">
-  <sub>Day 03 complete · Core workflow 24 Aug · MVP by 26 Aug · Submit by 5 Sep</sub>
+  <sub>Day 04 complete · Intelligence 25 Aug · MVP by 26 Aug · Submit by 5 Sep</sub>
 </p>

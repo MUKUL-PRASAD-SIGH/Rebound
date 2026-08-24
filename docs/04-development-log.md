@@ -15,7 +15,7 @@ Repo skeleton, docs system, schedule.
 
 ## Phase 3 — MVP (23–26 Aug)
 - Aug 23: Skeleton ✅ (API + SQLite + React shell + seed)
-- Aug 24: Core workflow  
+- Aug 24: Core workflow ✅ (rules decide → gate → dry_run execute → audit UI)
 - Aug 25: Intelligence  
 - Aug 26: Integration → ugly but working  
 

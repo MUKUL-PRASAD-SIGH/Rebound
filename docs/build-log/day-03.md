@@ -45,5 +45,5 @@ Skeleton: backend + DB + API routes + frontend shell so the repo runs with empty
 ## Stop line
 **Day 03 ends here.** No decide/execute/eval implementation in this day.
 
-## Next (only when starting Day 04)
-- Happy-path: rules ladder decide → dry_run execute → audit in UI
+## Next (Day 04) — done
+- Happy-path: rules ladder decide → dry_run execute → audit in UI → see [`day-04.md`](./day-04.md)

@@ -17,28 +17,80 @@ export type CaseRow = {
   failure_class: string;
   method: string;
   attempt_n: number;
+  customer_ref?: string;
+  tenure_days?: number;
+  currency?: string;
+  source?: string;
+  latest_decision_action?: string | null;
+  latest_gate_result?: string | null;
+  failure_code?: string | null;
 };
 
+export type AuditEvent = {
+  id: string;
+  case_id: string;
+  kind: string;
+  payload: Record<string, unknown>;
+  created_at: string;
+};
+
+export type DecideResult = {
+  case_id: string;
+  proposed_action: string;
+  gated_action: string;
+  gate_result: string;
+  gate_reason: string;
+  rationale: string;
+  confidence: number;
+  ev: number;
+  executed: boolean;
+  attempt_id: string | null;
+};
+
+export type ExecuteResult = {
+  attempt_id: string;
+  action: string;
+  mode: string;
+  response: Record<string, unknown>;
+};
+
+async function jsonOrThrow<T>(res: Response): Promise<T> {
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`${res.status}: ${text}`);
+  }
+  return res.json() as Promise<T>;
+}
+
 export async function getHealth(): Promise<{ status: string; version: string }> {
-  const res = await fetch(`${API}/api/v1/health`);
-  if (!res.ok) throw new Error(`health ${res.status}`);
-  return res.json();
+  return jsonOrThrow(await fetch(`${API}/api/v1/health`));
 }
 
 export async function getMetrics(): Promise<MetricsSummary> {
-  const res = await fetch(`${API}/api/v1/metrics/summary`);
-  if (!res.ok) throw new Error(`metrics ${res.status}`);
-  return res.json();
+  return jsonOrThrow(await fetch(`${API}/api/v1/metrics/summary`));
 }
 
 export async function listCases(): Promise<CaseRow[]> {
-  const res = await fetch(`${API}/api/v1/cases`);
-  if (!res.ok) throw new Error(`cases ${res.status}`);
-  return res.json();
+  return jsonOrThrow(await fetch(`${API}/api/v1/cases`));
+}
+
+export async function getCase(id: string): Promise<CaseRow> {
+  return jsonOrThrow(await fetch(`${API}/api/v1/cases/${id}`));
+}
+
+export async function getCaseAudit(id: string): Promise<AuditEvent[]> {
+  return jsonOrThrow(await fetch(`${API}/api/v1/cases/${id}/audit`));
 }
 
 export async function seedSynthetic(): Promise<{ inserted: number; skipped: number }> {
-  const res = await fetch(`${API}/api/v1/ingest/synthetic`, { method: "POST" });
-  if (!res.ok) throw new Error(`seed ${res.status}`);
-  return res.json();
+  return jsonOrThrow(await fetch(`${API}/api/v1/ingest/synthetic`, { method: "POST" }));
+}
+
+export async function decideCase(id: string, autoExecute = false): Promise<DecideResult> {
+  const q = autoExecute ? "?auto_execute=true" : "";
+  return jsonOrThrow(await fetch(`${API}/api/v1/cases/${id}/decide${q}`, { method: "POST" }));
+}
+
+export async function executeCase(id: string): Promise<ExecuteResult> {
+  return jsonOrThrow(await fetch(`${API}/api/v1/cases/${id}/execute`, { method: "POST" }));
 }

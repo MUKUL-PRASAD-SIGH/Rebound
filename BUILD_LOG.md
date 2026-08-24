@@ -174,3 +174,30 @@ Day-wise logs through Day 03 are the source of truth:
 No Day 04 work in this checkpoint.
 
 ---
+
+## 24 August 2026 — Day 04 (core workflow)
+
+### Goal
+Happy-path without ML: rules decide → policy gate → dry_run/simulated execute → audit in UI.
+
+### What I built
+- Rules ladder proposer + policy caps/rewrites
+- Workflow orchestration (`rebound/workflow.py`)
+- Dry_run / simulated executors
+- Webhook-shaped ingest upsert
+- API decide/execute live; Case detail UI with audit trail
+- Smoke: `silent_retry → allow → executed`
+
+### Decisions
+- Rules-only on Day 04; EV/ML deferred to Day 05
+- Default safe execution modes (no required live Razorpay calls)
+- Eval lift runner still Day 05/06
+
+### Evidence
+- `docs/build-log/day-04.md`
+- Local workflow smoke test
+
+### Next (Day 05)
+- Intelligence: EV scoring / simple model + eval scaffolding
+
+---
