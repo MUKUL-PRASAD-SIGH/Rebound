@@ -1,4 +1,4 @@
-"""Deterministic policy gate — allowlist + caps + confidence floor."""
+"""Deterministic policy gate — allowlist + caps + confidence + min EV."""
 
 from __future__ import annotations
 
@@ -15,6 +15,7 @@ from rebound.schemas.enums import ALLOWLISTED_ACTIONS, Action, GateResult
 MAX_SILENT_RETRIES = 3
 MAX_NOTIFIES = 2
 MIN_CONFIDENCE = 0.35
+MIN_EV = 0.0
 
 
 @dataclass
@@ -53,6 +54,14 @@ def gate(proposal: ProposalPayload, db: Session | None = None, case: Case | None
             action=Action.STOP,
             gate_result=GateResult.REWRITE_STOP,
             reason=f"confidence_below_{MIN_CONFIDENCE}",
+            policy_version=version,
+        )
+
+    if proposal.action not in {Action.STOP, Action.ESCALATE} and proposal.ev < MIN_EV:
+        return GateDecision(
+            action=Action.STOP,
+            gate_result=GateResult.REWRITE_STOP,
+            reason="ev_below_min",
             policy_version=version,
         )
 

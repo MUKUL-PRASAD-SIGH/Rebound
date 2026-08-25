@@ -1,52 +1,602 @@
 [
   {
     "case_key": "syn-001",
-    "amount_paise": 49900,
-    "customer_ref": "cust_a",
-    "failure_code": "BAD_REQUEST_ERROR",
-    "failure_class": "insufficient_funds",
-    "attempt_n": 1,
-    "tenure_days": 90,
-    "method": "card"
+    "amount_paise": 937566,
+    "customer_ref": "cust_001",
+    "failure_code": "ERR_UNKNOWN",
+    "failure_class": "unknown",
+    "attempt_n": 3,
+    "tenure_days": 359,
+    "method": "netbanking"
   },
   {
     "case_key": "syn-002",
-    "amount_paise": 19900,
-    "customer_ref": "cust_b",
-    "failure_code": "GATEWAY_ERROR",
-    "failure_class": "bank_decline",
-    "attempt_n": 2,
-    "tenure_days": 30,
-    "method": "upi"
+    "amount_paise": 1083555,
+    "customer_ref": "cust_002",
+    "failure_code": "ERR_UNKNOWN",
+    "failure_class": "unknown",
+    "attempt_n": 1,
+    "tenure_days": 28,
+    "method": "card"
   },
   {
     "case_key": "syn-003",
-    "amount_paise": 99900,
-    "customer_ref": "cust_c",
-    "failure_code": "CARD_EXPIRED",
+    "amount_paise": 1111487,
+    "customer_ref": "cust_003",
+    "failure_code": "ERR_EXPIRED_CARD",
     "failure_class": "expired_card",
-    "attempt_n": 1,
-    "tenure_days": 180,
+    "attempt_n": 4,
+    "tenure_days": 9,
     "method": "card"
   },
   {
     "case_key": "syn-004",
-    "amount_paise": 9900,
-    "customer_ref": "cust_d",
-    "failure_code": null,
+    "amount_paise": 592008,
+    "customer_ref": "cust_004",
+    "failure_code": "ERR_UNKNOWN",
     "failure_class": "unknown",
-    "attempt_n": 3,
-    "tenure_days": 14,
-    "method": "upi"
+    "attempt_n": 4,
+    "tenure_days": 53,
+    "method": "card"
   },
   {
     "case_key": "syn-005",
-    "amount_paise": 249900,
-    "customer_ref": "cust_e",
-    "failure_code": "PAYMENT_DECLINED",
+    "amount_paise": 712122,
+    "customer_ref": "cust_005",
+    "failure_code": "ERR_UNKNOWN",
+    "failure_class": "unknown",
+    "attempt_n": 2,
+    "tenure_days": 116,
+    "method": "netbanking"
+  },
+  {
+    "case_key": "syn-006",
+    "amount_paise": 1193321,
+    "customer_ref": "cust_006",
+    "failure_code": "ERR_EXPIRED_CARD",
+    "failure_class": "expired_card",
+    "attempt_n": 2,
+    "tenure_days": 194,
+    "method": "netbanking"
+  },
+  {
+    "case_key": "syn-007",
+    "amount_paise": 887448,
+    "customer_ref": "cust_007",
+    "failure_code": "ERR_BANK_DECLINE",
+    "failure_class": "bank_decline",
+    "attempt_n": 3,
+    "tenure_days": 398,
+    "method": "wallet"
+  },
+  {
+    "case_key": "syn-008",
+    "amount_paise": 990192,
+    "customer_ref": "cust_008",
+    "failure_code": "ERR_UNKNOWN",
+    "failure_class": "unknown",
+    "attempt_n": 3,
+    "tenure_days": 141,
+    "method": "wallet"
+  },
+  {
+    "case_key": "syn-009",
+    "amount_paise": 111477,
+    "customer_ref": "cust_009",
+    "failure_code": "ERR_EXPIRED_CARD",
+    "failure_class": "expired_card",
+    "attempt_n": 4,
+    "tenure_days": 247,
+    "method": "upi"
+  },
+  {
+    "case_key": "syn-010",
+    "amount_paise": 599090,
+    "customer_ref": "cust_010",
+    "failure_code": "ERR_INSUFFICIENT_FUNDS",
+    "failure_class": "insufficient_funds",
+    "attempt_n": 3,
+    "tenure_days": 388,
+    "method": "card"
+  },
+  {
+    "case_key": "syn-011",
+    "amount_paise": 458898,
+    "customer_ref": "cust_011",
+    "failure_code": "ERR_UNKNOWN",
+    "failure_class": "unknown",
+    "attempt_n": 2,
+    "tenure_days": 209,
+    "method": "card"
+  },
+  {
+    "case_key": "syn-012",
+    "amount_paise": 496559,
+    "customer_ref": "cust_012",
+    "failure_code": "ERR_EXPIRED_CARD",
+    "failure_class": "expired_card",
+    "attempt_n": 1,
+    "tenure_days": 45,
+    "method": "upi"
+  },
+  {
+    "case_key": "syn-013",
+    "amount_paise": 347455,
+    "customer_ref": "cust_013",
+    "failure_code": "ERR_UNKNOWN",
+    "failure_class": "unknown",
+    "attempt_n": 3,
+    "tenure_days": 152,
+    "method": "card"
+  },
+  {
+    "case_key": "syn-014",
+    "amount_paise": 333426,
+    "customer_ref": "cust_014",
+    "failure_code": "ERR_INSUFFICIENT_FUNDS",
     "failure_class": "insufficient_funds",
     "attempt_n": 1,
-    "tenure_days": 365,
+    "tenure_days": 216,
     "method": "card"
+  },
+  {
+    "case_key": "syn-015",
+    "amount_paise": 440664,
+    "customer_ref": "cust_015",
+    "failure_code": "ERR_UNKNOWN",
+    "failure_class": "unknown",
+    "attempt_n": 4,
+    "tenure_days": 339,
+    "method": "netbanking"
+  },
+  {
+    "case_key": "syn-016",
+    "amount_paise": 239289,
+    "customer_ref": "cust_016",
+    "failure_code": "ERR_BANK_DECLINE",
+    "failure_class": "bank_decline",
+    "attempt_n": 1,
+    "tenure_days": 103,
+    "method": "netbanking"
+  },
+  {
+    "case_key": "syn-017",
+    "amount_paise": 256247,
+    "customer_ref": "cust_017",
+    "failure_code": "ERR_BANK_DECLINE",
+    "failure_class": "bank_decline",
+    "attempt_n": 3,
+    "tenure_days": 148,
+    "method": "netbanking"
+  },
+  {
+    "case_key": "syn-018",
+    "amount_paise": 962109,
+    "customer_ref": "cust_018",
+    "failure_code": "ERR_BANK_DECLINE",
+    "failure_class": "bank_decline",
+    "attempt_n": 2,
+    "tenure_days": 242,
+    "method": "card"
+  },
+  {
+    "case_key": "syn-019",
+    "amount_paise": 79248,
+    "customer_ref": "cust_019",
+    "failure_code": "ERR_INSUFFICIENT_FUNDS",
+    "failure_class": "insufficient_funds",
+    "attempt_n": 2,
+    "tenure_days": 156,
+    "method": "netbanking"
+  },
+  {
+    "case_key": "syn-020",
+    "amount_paise": 222445,
+    "customer_ref": "cust_020",
+    "failure_code": "ERR_UNKNOWN",
+    "failure_class": "unknown",
+    "attempt_n": 3,
+    "tenure_days": 182,
+    "method": "netbanking"
+  },
+  {
+    "case_key": "syn-021",
+    "amount_paise": 339742,
+    "customer_ref": "cust_021",
+    "failure_code": "ERR_BANK_DECLINE",
+    "failure_class": "bank_decline",
+    "attempt_n": 3,
+    "tenure_days": 180,
+    "method": "card"
+  },
+  {
+    "case_key": "syn-022",
+    "amount_paise": 413848,
+    "customer_ref": "cust_022",
+    "failure_code": "ERR_INSUFFICIENT_FUNDS",
+    "failure_class": "insufficient_funds",
+    "attempt_n": 1,
+    "tenure_days": 166,
+    "method": "wallet"
+  },
+  {
+    "case_key": "syn-023",
+    "amount_paise": 111326,
+    "customer_ref": "cust_023",
+    "failure_code": "ERR_UNKNOWN",
+    "failure_class": "unknown",
+    "attempt_n": 1,
+    "tenure_days": 125,
+    "method": "card"
+  },
+  {
+    "case_key": "syn-024",
+    "amount_paise": 268751,
+    "customer_ref": "cust_024",
+    "failure_code": "ERR_UNKNOWN",
+    "failure_class": "unknown",
+    "attempt_n": 1,
+    "tenure_days": 339,
+    "method": "wallet"
+  },
+  {
+    "case_key": "syn-025",
+    "amount_paise": 472649,
+    "customer_ref": "cust_025",
+    "failure_code": "ERR_EXPIRED_CARD",
+    "failure_class": "expired_card",
+    "attempt_n": 4,
+    "tenure_days": 230,
+    "method": "card"
+  },
+  {
+    "case_key": "syn-026",
+    "amount_paise": 376258,
+    "customer_ref": "cust_026",
+    "failure_code": "ERR_INSUFFICIENT_FUNDS",
+    "failure_class": "insufficient_funds",
+    "attempt_n": 4,
+    "tenure_days": 103,
+    "method": "netbanking"
+  },
+  {
+    "case_key": "syn-027",
+    "amount_paise": 94273,
+    "customer_ref": "cust_027",
+    "failure_code": "ERR_INSUFFICIENT_FUNDS",
+    "failure_class": "insufficient_funds",
+    "attempt_n": 4,
+    "tenure_days": 259,
+    "method": "netbanking"
+  },
+  {
+    "case_key": "syn-028",
+    "amount_paise": 491646,
+    "customer_ref": "cust_028",
+    "failure_code": "ERR_BANK_DECLINE",
+    "failure_class": "bank_decline",
+    "attempt_n": 2,
+    "tenure_days": 90,
+    "method": "upi"
+  },
+  {
+    "case_key": "syn-029",
+    "amount_paise": 23738,
+    "customer_ref": "cust_029",
+    "failure_code": "ERR_BANK_DECLINE",
+    "failure_class": "bank_decline",
+    "attempt_n": 3,
+    "tenure_days": 190,
+    "method": "wallet"
+  },
+  {
+    "case_key": "syn-030",
+    "amount_paise": 226034,
+    "customer_ref": "cust_030",
+    "failure_code": "ERR_BANK_DECLINE",
+    "failure_class": "bank_decline",
+    "attempt_n": 4,
+    "tenure_days": 28,
+    "method": "upi"
+  },
+  {
+    "case_key": "syn-031",
+    "amount_paise": 760529,
+    "customer_ref": "cust_031",
+    "failure_code": "ERR_BANK_DECLINE",
+    "failure_class": "bank_decline",
+    "attempt_n": 4,
+    "tenure_days": 55,
+    "method": "card"
+  },
+  {
+    "case_key": "syn-032",
+    "amount_paise": 365202,
+    "customer_ref": "cust_032",
+    "failure_code": "ERR_UNKNOWN",
+    "failure_class": "unknown",
+    "attempt_n": 2,
+    "tenure_days": 38,
+    "method": "netbanking"
+  },
+  {
+    "case_key": "syn-033",
+    "amount_paise": 436940,
+    "customer_ref": "cust_033",
+    "failure_code": "ERR_EXPIRED_CARD",
+    "failure_class": "expired_card",
+    "attempt_n": 1,
+    "tenure_days": 238,
+    "method": "card"
+  },
+  {
+    "case_key": "syn-034",
+    "amount_paise": 452070,
+    "customer_ref": "cust_034",
+    "failure_code": "ERR_BANK_DECLINE",
+    "failure_class": "bank_decline",
+    "attempt_n": 3,
+    "tenure_days": 215,
+    "method": "wallet"
+  },
+  {
+    "case_key": "syn-035",
+    "amount_paise": 454943,
+    "customer_ref": "cust_035",
+    "failure_code": "ERR_UNKNOWN",
+    "failure_class": "unknown",
+    "attempt_n": 2,
+    "tenure_days": 373,
+    "method": "card"
+  },
+  {
+    "case_key": "syn-036",
+    "amount_paise": 372739,
+    "customer_ref": "cust_036",
+    "failure_code": "ERR_INSUFFICIENT_FUNDS",
+    "failure_class": "insufficient_funds",
+    "attempt_n": 4,
+    "tenure_days": 260,
+    "method": "upi"
+  },
+  {
+    "case_key": "syn-037",
+    "amount_paise": 212257,
+    "customer_ref": "cust_037",
+    "failure_code": "ERR_UNKNOWN",
+    "failure_class": "unknown",
+    "attempt_n": 4,
+    "tenure_days": 12,
+    "method": "wallet"
+  },
+  {
+    "case_key": "syn-038",
+    "amount_paise": 476245,
+    "customer_ref": "cust_038",
+    "failure_code": "ERR_BANK_DECLINE",
+    "failure_class": "bank_decline",
+    "attempt_n": 3,
+    "tenure_days": 41,
+    "method": "netbanking"
+  },
+  {
+    "case_key": "syn-039",
+    "amount_paise": 116979,
+    "customer_ref": "cust_039",
+    "failure_code": "ERR_INSUFFICIENT_FUNDS",
+    "failure_class": "insufficient_funds",
+    "attempt_n": 4,
+    "tenure_days": 149,
+    "method": "upi"
+  },
+  {
+    "case_key": "syn-040",
+    "amount_paise": 158421,
+    "customer_ref": "cust_040",
+    "failure_code": "ERR_INSUFFICIENT_FUNDS",
+    "failure_class": "insufficient_funds",
+    "attempt_n": 4,
+    "tenure_days": 347,
+    "method": "netbanking"
+  },
+  {
+    "case_key": "syn-041",
+    "amount_paise": 173233,
+    "customer_ref": "cust_041",
+    "failure_code": "ERR_UNKNOWN",
+    "failure_class": "unknown",
+    "attempt_n": 1,
+    "tenure_days": 381,
+    "method": "upi"
+  },
+  {
+    "case_key": "syn-042",
+    "amount_paise": 83141,
+    "customer_ref": "cust_042",
+    "failure_code": "ERR_EXPIRED_CARD",
+    "failure_class": "expired_card",
+    "attempt_n": 3,
+    "tenure_days": 380,
+    "method": "netbanking"
+  },
+  {
+    "case_key": "syn-043",
+    "amount_paise": 448687,
+    "customer_ref": "cust_043",
+    "failure_code": "ERR_UNKNOWN",
+    "failure_class": "unknown",
+    "attempt_n": 3,
+    "tenure_days": 235,
+    "method": "wallet"
+  },
+  {
+    "case_key": "syn-044",
+    "amount_paise": 190227,
+    "customer_ref": "cust_044",
+    "failure_code": "ERR_EXPIRED_CARD",
+    "failure_class": "expired_card",
+    "attempt_n": 2,
+    "tenure_days": 287,
+    "method": "wallet"
+  },
+  {
+    "case_key": "syn-045",
+    "amount_paise": 38914,
+    "customer_ref": "cust_045",
+    "failure_code": "ERR_INSUFFICIENT_FUNDS",
+    "failure_class": "insufficient_funds",
+    "attempt_n": 1,
+    "tenure_days": 211,
+    "method": "netbanking"
+  },
+  {
+    "case_key": "syn-046",
+    "amount_paise": 394210,
+    "customer_ref": "cust_046",
+    "failure_code": "ERR_UNKNOWN",
+    "failure_class": "unknown",
+    "attempt_n": 4,
+    "tenure_days": 274,
+    "method": "netbanking"
+  },
+  {
+    "case_key": "syn-047",
+    "amount_paise": 359857,
+    "customer_ref": "cust_047",
+    "failure_code": "ERR_EXPIRED_CARD",
+    "failure_class": "expired_card",
+    "attempt_n": 4,
+    "tenure_days": 388,
+    "method": "card"
+  },
+  {
+    "case_key": "syn-048",
+    "amount_paise": 366798,
+    "customer_ref": "cust_048",
+    "failure_code": "ERR_EXPIRED_CARD",
+    "failure_class": "expired_card",
+    "attempt_n": 1,
+    "tenure_days": 73,
+    "method": "upi"
+  },
+  {
+    "case_key": "syn-049",
+    "amount_paise": 110289,
+    "customer_ref": "cust_049",
+    "failure_code": "ERR_EXPIRED_CARD",
+    "failure_class": "expired_card",
+    "attempt_n": 4,
+    "tenure_days": 337,
+    "method": "netbanking"
+  },
+  {
+    "case_key": "syn-050",
+    "amount_paise": 454741,
+    "customer_ref": "cust_050",
+    "failure_code": "ERR_INSUFFICIENT_FUNDS",
+    "failure_class": "insufficient_funds",
+    "attempt_n": 2,
+    "tenure_days": 75,
+    "method": "netbanking"
+  },
+  {
+    "case_key": "syn-051",
+    "amount_paise": 331241,
+    "customer_ref": "cust_051",
+    "failure_code": "ERR_EXPIRED_CARD",
+    "failure_class": "expired_card",
+    "attempt_n": 1,
+    "tenure_days": 384,
+    "method": "wallet"
+  },
+  {
+    "case_key": "syn-052",
+    "amount_paise": 208914,
+    "customer_ref": "cust_052",
+    "failure_code": "ERR_EXPIRED_CARD",
+    "failure_class": "expired_card",
+    "attempt_n": 3,
+    "tenure_days": 42,
+    "method": "upi"
+  },
+  {
+    "case_key": "syn-053",
+    "amount_paise": 35523,
+    "customer_ref": "cust_053",
+    "failure_code": "ERR_BANK_DECLINE",
+    "failure_class": "bank_decline",
+    "attempt_n": 1,
+    "tenure_days": 307,
+    "method": "netbanking"
+  },
+  {
+    "case_key": "syn-054",
+    "amount_paise": 421227,
+    "customer_ref": "cust_054",
+    "failure_code": "ERR_UNKNOWN",
+    "failure_class": "unknown",
+    "attempt_n": 1,
+    "tenure_days": 367,
+    "method": "wallet"
+  },
+  {
+    "case_key": "syn-055",
+    "amount_paise": 401908,
+    "customer_ref": "cust_055",
+    "failure_code": "ERR_BANK_DECLINE",
+    "failure_class": "bank_decline",
+    "attempt_n": 4,
+    "tenure_days": 212,
+    "method": "wallet"
+  },
+  {
+    "case_key": "syn-056",
+    "amount_paise": 619144,
+    "customer_ref": "cust_056",
+    "failure_code": "ERR_UNKNOWN",
+    "failure_class": "unknown",
+    "attempt_n": 1,
+    "tenure_days": 177,
+    "method": "upi"
+  },
+  {
+    "case_key": "syn-057",
+    "amount_paise": 130020,
+    "customer_ref": "cust_057",
+    "failure_code": "ERR_EXPIRED_CARD",
+    "failure_class": "expired_card",
+    "attempt_n": 4,
+    "tenure_days": 80,
+    "method": "wallet"
+  },
+  {
+    "case_key": "syn-058",
+    "amount_paise": 714101,
+    "customer_ref": "cust_058",
+    "failure_code": "ERR_BANK_DECLINE",
+    "failure_class": "bank_decline",
+    "attempt_n": 3,
+    "tenure_days": 49,
+    "method": "upi"
+  },
+  {
+    "case_key": "syn-059",
+    "amount_paise": 974511,
+    "customer_ref": "cust_059",
+    "failure_code": "ERR_INSUFFICIENT_FUNDS",
+    "failure_class": "insufficient_funds",
+    "attempt_n": 2,
+    "tenure_days": 129,
+    "method": "netbanking"
+  },
+  {
+    "case_key": "syn-060",
+    "amount_paise": 323123,
+    "customer_ref": "cust_060",
+    "failure_code": "ERR_UNKNOWN",
+    "failure_class": "unknown",
+    "attempt_n": 4,
+    "tenure_days": 178,
+    "method": "netbanking"
   }
 ]

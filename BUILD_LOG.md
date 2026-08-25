@@ -201,3 +201,29 @@ Happy-path without ML: rules decide → policy gate → dry_run/simulated execut
 - Intelligence: EV scoring / simple model + eval scaffolding
 
 ---
+
+## 25 August 2026 — Day 05 (intelligence)
+
+### Goal
+EV scoring + recoverability model + EV-max proposer; ≥50 synthetic batch.
+
+### What I built
+- Feature vectorization + sklearn logistic recoverability model
+- Proportional action costs + failure-class multipliers (non-degenerate EV)
+- `propose_ev` default with attempt bans + relative EV floor (stop is reachable)
+- Policy `min_ev` gate
+- `generate_batch.py` (60 cases, high-value ≥500k included) + `train_model.py`
+- [`docs/EXTERNAL_REQUIREMENTS.md`](docs/EXTERNAL_REQUIREMENTS.md) — tools/APIs checklist
+- `recover_model.json` gitignored (regenerate locally)
+
+### Decisions
+- No external API required for demo (Python + Node only)
+- Razorpay / LLM keys optional and unused in dry_run
+
+### Evidence
+- `docs/build-log/day-05.md`
+
+### Next (Day 06)
+- Eval lift runner (paired RNG) + outcome recording + UI
+
+---

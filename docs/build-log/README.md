@@ -1,7 +1,7 @@
 # Build log index (day-wise)
 
 > One file per calendar day. Mirror a short entry into root [`BUILD_LOG.md`](../../BUILD_LOG.md).  
-> **Current cutoff: Day 03 complete.** Do not start Day 04 docs until that day’s work begins.
+> **Pushed through: Day 05.** Later day files may exist locally before their push.
 
 | Day | Date | File | Status | Focus |
 | --- | --- | --- | --- | --- |
@@ -10,16 +10,9 @@
 | 02 | 22 Aug 2026 | [day-02.md](./day-02.md) | ✅ | Architecture + MVP freeze |
 | 03 | 23 Aug 2026 | [day-03.md](./day-03.md) | ✅ | Skeleton API + DB + React shell |
 | 04 | 24 Aug 2026 | [day-04.md](./day-04.md) | ✅ | Core workflow: decide → gate → execute → audit |
-| 05+ | — | — | ⏸ | Not started |
+| 05 | 25 Aug 2026 | [day-05.md](./day-05.md) | ✅ | EV / model intelligence |
+| 06+ | — | local | ⏸ | Eval / iteration / polish (not in Day 05 push) |
 
-## Commit convention (used so far)
-
-| Day | Example commit |
-| --- | --- |
-| scaffold | `chore: scaffold repo with gitignore…` |
-| 01 | `docs: Day 01 research, schedule, and Rebound PS lock` |
-| 02 | `docs: Day 02 architecture, MVP freeze, and system design` |
-| 03 | `feat: Day 03 skeleton — FastAPI, SQLite models, and React ops shell` |
-| 04 | `feat: Day 04 core workflow — decide, gate, execute, audit UI` |
+External tools checklist: [`docs/EXTERNAL_REQUIREMENTS.md`](../EXTERNAL_REQUIREMENTS.md)
 
 Template: [`_TEMPLATE.md`](./_TEMPLATE.md)

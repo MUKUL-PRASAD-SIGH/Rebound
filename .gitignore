@@ -55,14 +55,20 @@ temp/
 rebound.db
 src/apps/web/node_modules/
 src/apps/web/dist/
+src/apps/web/*.tsbuildinfo
+*.tsbuildinfo
 
+# Generated ML artifact (recreate with: python src/scripts/train_model.py)
+src/scripts/recover_model.json
 
-# Large local media (keep curated evidence; ignore dumps)
-evidence/_raw/
-*.mp4
-*.mov
-*.webm
-!evidence/**/.gitkeep
+# Eval / benchmark dumps
+evidence/benchmarks/runs/
+
+# Pytest / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
 
 # Notebooks checkpoints
 .ipynb_checkpoints/
