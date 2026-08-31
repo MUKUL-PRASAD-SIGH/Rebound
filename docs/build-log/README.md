@@ -13,7 +13,8 @@
 | 05 | 25 Aug 2026 | [day-05.md](./day-05.md) | ✅ | EV / model intelligence |
 | 06 | 26 Aug 2026 | [day-06.md](./day-06.md) | ✅ | Eval / MVP lift |
 | 07 | 27 Aug 2026 | [day-07.md](./day-07.md) | ✅ | Batch decide + global audit |
-| 08+ | — | local | ⏸ | Iteration / polish (not yet pushed) |
+| 08 | 28 Aug 2026 | [day-08.md](./day-08.md) | ✅ | Baseline B policy comparison |
+| 09+ | — | local | ⏸ | Iteration / polish (not yet pushed) |
 
 External tools checklist: [`docs/EXTERNAL_REQUIREMENTS.md`](../EXTERNAL_REQUIREMENTS.md)
 

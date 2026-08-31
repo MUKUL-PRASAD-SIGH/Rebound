@@ -281,3 +281,29 @@ Iteration: batch decision calls + a global audit trail with a clean demo path.
 - Baseline B visibility and policy comparison polish
 
 ---
+
+## 28 August 2026 — Day 08 (Baseline B comparison)
+
+### Goal
+Make the evaluation story visibly compare three behaviors: Baseline A, Baseline B, and Rebound.
+
+### What I built
+- `EvalPage.tsx` comparison table across all three policies
+- Clear labels for recovery rate, net value, cost, stop rate, and simulated share
+- Honest simulated-output annotations preserved in the UI and summary text
+- `rebound/eval/__init__.py` already exposes the Baseline B summary alongside Rebound
+
+### Decisions
+- Keep Baseline B visible as the alternate heuristic in the same run so judges can compare apples-to-apples
+- Do not overstate the result as actual live revenue; the page explicitly states it is simulated
+- The eval layer remains a decision aid, not a live payment system
+
+### Evidence
+- Eval comparison table output from `run_eval.py`
+- UI policy-side-by-side view in `EvalPage.tsx`
+- Local comparison pass across A / B / Rebound scenario outputs
+
+### Next (Day 09+)
+- Approval/escalate UX and edge-case hardening
+
+---
