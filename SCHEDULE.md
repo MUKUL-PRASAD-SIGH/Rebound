@@ -76,6 +76,7 @@ After Aug 26: **9 days left to make it excellent.**
 | **Aug 23** | **DONE** — Skeleton API + DB + React shell |
 | **Aug 24** | **DONE** — Core workflow decide → gate → execute → audit |
 | **Aug 25** | **DONE** — EV / model intelligence (Day 05) |
-| **Aug 26+** | Eval lift → iteration → polish (local / next pushes) |
+| **Aug 26** | **DONE** — Eval lift + outcome audit (Day 06) |
+| **Aug 27+** | Iteration → polish (next pushes) |
 
 Architecture: [`architecture/README.md`](architecture/README.md) · MVP: [`architecture/mvp-scope.md`](architecture/mvp-scope.md) · Externals: [`docs/EXTERNAL_REQUIREMENTS.md`](docs/EXTERNAL_REQUIREMENTS.md)

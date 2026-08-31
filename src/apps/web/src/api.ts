@@ -94,3 +94,14 @@ export async function decideCase(id: string, autoExecute = false): Promise<Decid
 export async function executeCase(id: string): Promise<ExecuteResult> {
   return jsonOrThrow(await fetch(`${API}/api/v1/cases/${id}/execute`, { method: "POST" }));
 }
+
+export async function batchDecide(autoExecute = true): Promise<{ count: number }> {
+  const q = autoExecute ? "?auto_execute=true" : "?auto_execute=false";
+  return jsonOrThrow(await fetch(`${API}/api/v1/cases/batch/decide${q}`, { method: "POST" }));
+}
+
+export async function runEval(seed = 42): Promise<Record<string, unknown>> {
+  return jsonOrThrow(
+    await fetch(`${API}/api/v1/eval/runs?seed=${seed}`, { method: "POST", body: "{}" }),
+  );
+}

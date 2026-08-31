@@ -73,17 +73,28 @@ def propose_rules_ladder(db: Session, case: Case) -> ProposalPayload:
     )
 
 
-def propose_ev(db: Session, case: Case) -> ProposalPayload:
+def propose_ev(
+    db: Session | None,
+    case: Case,
+    *,
+    ignore_history: bool = False,
+) -> ProposalPayload:
+    """EV-max propose. Set ignore_history=True for batch eval (fair vs baselines)."""
     feats = extract_features(case)
     scores = score_actions(feats, case.amount_paise)
     banned: set[str] = set()
-    if _count_actions(db, case.id, Action.SILENT_RETRY.value) >= 3 or case.attempt_n >= 3:
+    retry_n = 0 if ignore_history or db is None else _count_actions(db, case.id, Action.SILENT_RETRY.value)
+    notify_n = (
+        0 if ignore_history or db is None else _count_actions(db, case.id, Action.NOTIFY_UPDATE_METHOD.value)
+    )
+    link_n = 0 if ignore_history or db is None else _count_actions(db, case.id, Action.PAYMENT_LINK.value)
+
+    if retry_n >= 3 or case.attempt_n >= 3:
         banned.add(Action.SILENT_RETRY.value)
-    if _count_actions(db, case.id, Action.NOTIFY_UPDATE_METHOD.value) >= 2:
+    if notify_n >= 2:
         banned.add(Action.NOTIFY_UPDATE_METHOD.value)
-    if _count_actions(db, case.id, Action.PAYMENT_LINK.value) >= 2:
+    if link_n >= 2:
         banned.add(Action.PAYMENT_LINK.value)
-    # High-value unknown: escalate often wins on EV after multiplier bump
     if case.amount_paise >= 500_000 and case.failure_class == "unknown" and case.attempt_n >= 2:
         banned.add(Action.SILENT_RETRY.value)
 
@@ -98,7 +109,6 @@ def propose_ev(db: Session, case: Case) -> ProposalPayload:
             best_action = action
             best = s
 
-    # Relative EV floor: tiny EV vs amount → stop (cost avoidance)
     if best_ev <= 0 or best_ev < 0.02 * float(case.amount_paise):
         best_action = Action.STOP.value
         best = scores[Action.STOP.value]

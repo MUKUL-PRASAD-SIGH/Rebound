@@ -227,3 +227,31 @@ EV scoring + recoverability model + EV-max proposer; ≥50 synthetic batch.
 - Eval lift runner (paired RNG) + outcome recording + UI
 
 ---
+
+## 26 August 2026 — Day 06 (eval lift)
+
+### Goal
+Integrate the end-to-end MVP with honest baseline comparison and a visible `lift_value` story.
+
+### What I built
+- `src/rebound/eval/__init__.py` — paired Baseline A / Rebound simulation with summary metrics
+- `src/scripts/run_eval.py` — local eval runner for `lift_value` output and case-level outcomes
+- API routes in `src/apps/api/main.py` — eval run create/list + recent audit endpoints
+- Eval page in `src/apps/web/src/pages/EvalPage.tsx` — compare Baseline A vs Rebound and show outcomes
+- Home / audit copy updated to reflect the decision loop and audit trail
+- `src/tests/test_core.py` added for the eval workflow and core path
+
+### Decisions
+- Keep the headline metric as `lift_value = net(Rebound) - net(Baseline A)`
+- Simulated outcomes remain explicitly labeled; never represent test-mode results as real revenue
+- The MVP closes with decide → execute → eval loop, not with another full research detour
+
+### Evidence
+- Eval runs and lift outputs generated from the seeded batch
+- UI + API wiring for `eval` and `audit` flows
+- Local test coverage on the core run path
+
+### Next (Day 07+)
+- Iteration: batch decide, audit clarity, UI copy polish, and remaining quality work
+
+---

@@ -14,7 +14,7 @@ from rebound.audit import append_audit
 from rebound.config import get_settings
 from rebound.db import Case, EvalRun, get_db, init_db
 from rebound.db.models import AuditEvent, Decision
-from rebound.ingest import upsert_from_webhook_payload
+from rebound.ingest import IngestValidationError, upsert_from_webhook_payload
 from rebound.schemas.api import (
     AuditEventOut,
     CaseDetailOut,
@@ -23,7 +23,6 @@ from rebound.schemas.api import (
     ExecuteResponse,
     HealthResponse,
     MetricsSummary,
-    StubMessage,
     SyntheticIngestResponse,
     WebhookIngestResponse,
 )
@@ -165,9 +164,35 @@ def ingest_synthetic(db: Session = Depends(get_db)) -> SyntheticIngestResponse:
 
 @app.post("/api/v1/ingest/webhooks/razorpay", response_model=WebhookIngestResponse)
 def ingest_webhook(payload: dict[str, Any], db: Session = Depends(get_db)) -> WebhookIngestResponse:
-    case, created = upsert_from_webhook_payload(db, payload)
+    try:
+        case, created = upsert_from_webhook_payload(db, payload)
+    except IngestValidationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     db.commit()
     return WebhookIngestResponse(case_id=case.id, case_key=case.case_key, created=created)
+
+
+@app.post("/api/v1/cases/batch/decide")
+def batch_decide(auto_execute: bool = True, db: Session = Depends(get_db)) -> dict[str, Any]:
+    """Decide (+ optional execute) all open cases — iteration helper.
+
+    Registered before ``/cases/{case_id}/decide`` so ``batch`` is not parsed as an id.
+    """
+    open_cases = list(
+        db.scalars(select(Case).where(Case.status == CaseStatus.OPEN.value)).all()
+    )
+    results = []
+    for case in open_cases:
+        r = decide_case(db, case, auto_execute=auto_execute)
+        results.append(
+            {
+                "case_id": r.case_id,
+                "gated_action": r.gated_action,
+                "gate_result": r.gate_result,
+                "executed": r.executed,
+            }
+        )
+    return {"count": len(results), "results": results}
 
 
 @app.post("/api/v1/cases/{case_id}/decide", response_model=DecideResponse)
@@ -211,11 +236,56 @@ def execute(case_id: str, db: Session = Depends(get_db)) -> ExecuteResponse:
     )
 
 
-@app.post("/api/v1/eval/runs", response_model=StubMessage)
-def eval_stub() -> StubMessage:
-    return StubMessage(detail="eval runner — Day 05/06 (Baseline A vs Rebound lift)")
+@app.get("/api/v1/eval/runs")
+def list_eval_runs(db: Session = Depends(get_db), limit: int = 20) -> list[dict[str, Any]]:
+    rows = list(db.scalars(select(EvalRun).order_by(EvalRun.created_at.desc()).limit(limit)).all())
+    out = []
+    for run in rows:
+        agg = json.loads(run.aggregates_json or "{}")
+        out.append(
+            {
+                "eval_run_id": run.id,
+                "batch_id": run.batch_id,
+                "lift_value": agg.get("lift_value"),
+                "created_at": run.created_at.isoformat() if run.created_at else None,
+            }
+        )
+    return out
 
 
-@app.get("/api/v1/eval/runs/{run_id}", response_model=StubMessage)
-def eval_get_stub(run_id: str) -> StubMessage:
-    return StubMessage(detail=f"eval run {run_id} not implemented yet")
+@app.post("/api/v1/eval/runs")
+def create_eval_run(
+    seed: int = 42,
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
+    from rebound.eval import run_eval
+
+    try:
+        return run_eval(db, seed=seed)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.get("/api/v1/eval/runs/{run_id}")
+def get_eval_run(run_id: str, db: Session = Depends(get_db)) -> dict[str, Any]:
+    run = db.get(EvalRun, run_id)
+    if not run:
+        raise HTTPException(status_code=404, detail="eval run not found")
+    return {"eval_run_id": run.id, "batch_id": run.batch_id, **json.loads(run.aggregates_json or "{}")}
+
+
+@app.get("/api/v1/audit/recent")
+def recent_audit(db: Session = Depends(get_db), limit: int = 50) -> list[AuditEventOut]:
+    rows = list(
+        db.scalars(select(AuditEvent).order_by(AuditEvent.created_at.desc()).limit(limit)).all()
+    )
+    return [
+        AuditEventOut(
+            id=r.id,
+            case_id=r.case_id,
+            kind=r.kind,
+            payload=json.loads(r.payload_json or "{}"),
+            created_at=r.created_at,
+        )
+        for r in rows
+    ]

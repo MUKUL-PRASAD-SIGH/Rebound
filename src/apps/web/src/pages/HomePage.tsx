@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getHealth, getMetrics, seedSynthetic, type MetricsSummary } from "../api";
+import { batchDecide, getHealth, getMetrics, seedSynthetic, type MetricsSummary } from "../api";
 
 export default function HomePage() {
   const [health, setHealth] = useState<string>("checking…");
@@ -26,8 +26,8 @@ export default function HomePage() {
     <section className="panel">
       <h1>Ops console</h1>
       <p className="lede">
-        Expected-value recovery controller. Skeleton wires the empty paths — decide / execute / eval
-        land next.
+        Expected-value recovery controller: seed a batch, decide open cases, then measure{" "}
+        <code>lift_value</code> vs Baseline A.
       </p>
       <dl className="meta">
         <div>
@@ -41,6 +41,10 @@ export default function HomePage() {
         <div>
           <dt>Open</dt>
           <dd>{metrics ? metrics.cases_open : "—"}</dd>
+        </div>
+        <div>
+          <dt>Recovered</dt>
+          <dd>{metrics ? metrics.cases_recovered : "—"}</dd>
         </div>
       </dl>
       <div className="row">
@@ -58,8 +62,25 @@ export default function HomePage() {
         >
           Seed sample batch
         </button>
+        <button
+          type="button"
+          onClick={async () => {
+            try {
+              const data = await batchDecide(true);
+              setMsg(`Batch decided ${data.count} open cases`);
+              await refresh();
+            } catch (e) {
+              setMsg(String(e));
+            }
+          }}
+        >
+          Batch decide+execute open
+        </button>
         <Link className="btn-link" to="/cases">
           View cases
+        </Link>
+        <Link className="btn-link" to="/eval">
+          Eval
         </Link>
       </div>
       {msg ? <p className="note">{msg}</p> : null}

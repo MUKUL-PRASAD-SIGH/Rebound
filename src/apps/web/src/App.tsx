@@ -17,7 +17,7 @@ export default function App() {
           <Link to="/eval">Eval</Link>
           <Link to="/audit">Audit</Link>
         </nav>
-        <span className="badge">Day 04 core workflow</span>
+        <span className="badge">MVP + eval</span>
       </header>
       <main>
         <Routes>

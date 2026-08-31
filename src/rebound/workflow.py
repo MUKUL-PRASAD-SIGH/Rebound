@@ -1,19 +1,23 @@
-"""Decide → gate → (optional) execute orchestration for a single case."""
+"""Decide → gate → (optional) execute → simulated outcome orchestration."""
 
 from __future__ import annotations
 
+import hashlib
 from dataclasses import dataclass
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from rebound.audit import append_audit
-from rebound.db.models import ActionAttempt, Case, Decision, Proposal
+from rebound.db.models import ActionAttempt, Case, Decision, Outcome, Proposal
 from rebound.execute import execute_action, result_to_json
 from rebound.features import extract_features
 from rebound.policy import gate
 from rebound.propose import propose_for_case
-from rebound.schemas.enums import Action, AuditKind, CaseStatus
+from rebound.schemas.enums import Action, AuditKind, CaseStatus, OutcomeLabel, OutcomeResult
+from rebound.scoring import score_actions
+
+MAX_ATTEMPTS_BEFORE_FORCE_STOP = 4
 
 
 @dataclass
@@ -30,11 +34,21 @@ class DecideResult:
     ev: float
     executed: bool = False
     attempt_id: str | None = None
+    outcome: str | None = None
 
 
 def decide_case(db: Session, case: Case, *, auto_execute: bool = False) -> DecideResult:
     features = extract_features(case)
-    append_audit(db, case.id, AuditKind.SCORED, {"features": features})
+    scores = score_actions(features, case.amount_paise)
+    append_audit(
+        db,
+        case.id,
+        AuditKind.SCORED,
+        {
+            "features": features,
+            "action_ev": {a: {"ev": s["ev"], "p": s["p_recover"]} for a, s in scores.items()},
+        },
+    )
 
     payload, proposer_kind = propose_for_case(db, case)
     proposal = Proposal(
@@ -106,9 +120,10 @@ def decide_case(db: Session, case: Case, *, auto_execute: bool = False) -> Decid
     )
 
     if auto_execute:
-        attempt = _execute(db, case, decision, gated.action)
+        attempt, outcome = _execute(db, case, decision, gated.action, p_recover=payload.p_recover)
         result.executed = True
         result.attempt_id = attempt.id
+        result.outcome = outcome
 
     db.commit()
     return result
@@ -120,17 +135,87 @@ def execute_latest_decision(db: Session, case: Case) -> ActionAttempt:
     )
     if not decision:
         raise ValueError("no_decision")
+    proposal = db.get(Proposal, decision.proposal_id) if decision.proposal_id else None
+    p_recover = float(proposal.p_recover) if proposal else 0.2
     action = Action(decision.action)
-    attempt = _execute(db, case, decision, action)
+    attempt, _ = _execute(db, case, decision, action, p_recover=p_recover)
     db.commit()
     return attempt
 
 
-def _execute(db: Session, case: Case, decision: Decision, action: Action) -> ActionAttempt:
+def _deterministic_uniform(case_id: str, attempt_id: str) -> float:
+    digest = hashlib.sha256(f"{case_id}:{attempt_id}".encode()).hexdigest()
+    return int(digest[:8], 16) / 0xFFFFFFFF
+
+
+def _record_outcome(
+    db: Session,
+    case: Case,
+    attempt: ActionAttempt,
+    action: Action,
+    p_recover: float,
+) -> str:
+    if action == Action.STOP:
+        result = OutcomeResult.STOPPED.value
+        value = 0
+        case.status = CaseStatus.STOPPED.value
+    elif action == Action.ESCALATE:
+        result = OutcomeResult.PENDING.value
+        value = 0
+        case.status = CaseStatus.ESCALATED.value
+    else:
+        u = _deterministic_uniform(case.id, attempt.id)
+        if u < max(0.0, min(0.95, p_recover)):
+            result = OutcomeResult.RECOVERED.value
+            value = case.amount_paise
+            case.status = CaseStatus.RECOVERED.value
+        else:
+            result = OutcomeResult.FAILED.value
+            value = 0
+            # Re-open for another decide step until attempt cap
+            if case.attempt_n < MAX_ATTEMPTS_BEFORE_FORCE_STOP:
+                case.attempt_n = int(case.attempt_n) + 1
+                case.status = CaseStatus.OPEN.value
+            else:
+                case.status = CaseStatus.STOPPED.value
+                result = OutcomeResult.STOPPED.value
+
+    outcome = Outcome(
+        case_id=case.id,
+        action_attempt_id=attempt.id,
+        result=result,
+        value_paise=value,
+        label=OutcomeLabel.SIMULATED.value,
+    )
+    db.add(outcome)
+    db.flush()
+    append_audit(
+        db,
+        case.id,
+        AuditKind.OUTCOME,
+        {
+            "result": result,
+            "value_paise": value,
+            "label": OutcomeLabel.SIMULATED.value,
+            "attempt_id": attempt.id,
+            "case_status": case.status,
+        },
+    )
+    return result
+
+
+def _execute(
+    db: Session,
+    case: Case,
+    decision: Decision,
+    action: Action,
+    *,
+    p_recover: float,
+) -> tuple[ActionAttempt, str | None]:
     idem = f"{case.id}:{action.value}:{decision.id}"
     existing = db.scalar(select(ActionAttempt).where(ActionAttempt.idempotency_key == idem))
     if existing:
-        return existing
+        return existing, None
 
     exec_result = execute_action(action, case.id, case.case_key, case.amount_paise)
     req_json, resp_json = result_to_json(exec_result)
@@ -158,11 +243,5 @@ def _execute(db: Session, case: Case, decision: Decision, action: Action) -> Act
         },
     )
 
-    if action == Action.STOP:
-        case.status = CaseStatus.STOPPED.value
-    elif action == Action.ESCALATE:
-        case.status = CaseStatus.ESCALATED.value
-    else:
-        case.status = CaseStatus.ACTING.value
-
-    return attempt
+    outcome = _record_outcome(db, case, attempt, action, p_recover)
+    return attempt, outcome

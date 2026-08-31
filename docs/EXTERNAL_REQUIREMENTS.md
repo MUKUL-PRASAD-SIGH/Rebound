@@ -21,8 +21,8 @@ Single checklist of everything needed to run Rebound end-to-end. **Nothing here 
 | `pydantic`, `pydantic-settings` | Config + schemas |
 | `python-dotenv` | Load `.env` |
 | `numpy`, `scikit-learn` | Features + recoverability model |
-| `httpx` | Reserved for optional Razorpay HTTP (not called in dry_run) |
-| `pytest` | Test suite |
+| `httpx` | FastAPI `TestClient` / optional future Razorpay HTTP | **Required for pytest**; not used in dry_run execute path |
+| `pytest` | Test suite | `cd src && python -m pytest tests -q` |
 
 ### Default ports
 
@@ -91,4 +91,4 @@ python -m uvicorn apps.api.main:app --app-dir src --reload --port 8000
 cd src/apps/web && npm install && npm run dev
 ```
 
-Demo path: [`docs/submission/demo-runbook.md`](submission/demo-runbook.md)
+Demo path (local until Day 06 push): [`docs/submission/demo-runbook.md`](submission/demo-runbook.md)
