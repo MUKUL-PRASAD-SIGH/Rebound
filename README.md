@@ -1,7 +1,7 @@
 # Rebound — Razorpay AI Buildathon 2026
 
 [![Track](https://img.shields.io/badge/Track-03%20AI%20Revenue%20Recovery-0A2540?style=for-the-badge)](https://razorpay.com/buildathon/)
-  [![Status](https://img.shields.io/badge/Status-Day%2006%20Eval%20Lift-2E7D32?style=for-the-badge)](#project-status)
+  [![Status](https://img.shields.io/badge/Status-Day%2007%20Batch%20Audit-2E7D32?style=for-the-badge)](#project-status)
 [![Stack](https://img.shields.io/badge/Stack-FastAPI%20·%20ML%20·%20React-136FEC?style=for-the-badge)](#planned-stack)
 [![License](https://img.shields.io/badge/License-Private%20Lab-6B7280?style=for-the-badge)](#safety--secrets)
 
@@ -12,7 +12,7 @@
 
 <p align="center">
   <a href="https://razorpay.com/buildathon/"><img src="https://img.shields.io/badge/Razorpay-AI%20Buildathon%202026-072654?logo=razorpay&logoColor=white" alt="Razorpay Buildathon" /></a>
-  <img src="https://img.shields.io/badge/Day-06%20Eval%20Lift-success" alt="Day 06 eval lift" />
+  <img src="https://img.shields.io/badge/Day-07%20Batch%20Audit-success" alt="Day 07 batch audit" />
   <img src="https://img.shields.io/badge/MVP_target-26%20Aug%202026-blue" alt="MVP target" />
   <img src="https://img.shields.io/badge/Submit-5%20Sep%202026-orange" alt="Submit date" />
   <img src="https://img.shields.io/badge/₹0-test--mode%20first-lightgrey" alt="Zero cost build" />
@@ -53,7 +53,8 @@ Full lock write-up: [`research/12-final-selection.md`](research/12-final-selecti
 | Core workflow (decide/execute/audit) | ✅ Done | 24 Aug 2026 |
 | Intelligence (EV + model) | ✅ Done | 25 Aug 2026 |
 | End-to-end MVP (eval lift) | ✅ Done | 26 Aug 2026 |
-| Iteration V2/V3 | Planned | 27–30 Aug 2026 |
+| Batch decide + global audit | ✅ Done | 27 Aug 2026 |
+| Iteration V2/V3 | Planned | 28–30 Aug 2026 |
 | Serious evaluation | Planned | 31 Aug–1 Sep 2026 |
 | Differentiation + polish | Planned | 2–3 Sep 2026 |
 | Docs, video, submit | Planned | 4–5 Sep 2026 |
@@ -106,7 +107,7 @@ razorpay-buildathon-2026/
 └── src/                      # Day 03+ product code
 ```
 
-**Status:** Day 06 eval lift complete. Externals: [`docs/EXTERNAL_REQUIREMENTS.md`](docs/EXTERNAL_REQUIREMENTS.md). Logs: [`docs/build-log/`](docs/build-log/README.md).
+**Status:** Day 07 batch ops and global audit complete. Externals: [`docs/EXTERNAL_REQUIREMENTS.md`](docs/EXTERNAL_REQUIREMENTS.md). Logs: [`docs/build-log/`](docs/build-log/README.md).
 
 ---
 
@@ -119,7 +120,8 @@ razorpay-buildathon-2026/
 | Aug 23 | Skeleton | ✅ API + DB + React shell |
 | Aug 24 | Core workflow | ✅ Decide → gate → execute → audit |
 | Aug 25–26 | Intelligence → integrate | ✅ Day 05 EV + Day 06 eval lift |
-| Aug 27–30 | Iteration | Strong V2/V3 |
+| Aug 27 | Batch + audit | ✅ Day 07 batch decide + audit |
+| Aug 28–30 | Iteration | Strong V2/V3 |
 | Aug 31–Sep 1 | Evaluation | Benchmarks + edge cases |
 | Sep 2–3 | Differentiation + polish | Demo-ready |
 | Sep 4–5 | Docs + QA + submit | Submission package |

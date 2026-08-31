@@ -255,3 +255,29 @@ Integrate the end-to-end MVP with honest baseline comparison and a visible `lift
 - Iteration: batch decide, audit clarity, UI copy polish, and remaining quality work
 
 ---
+
+## 27 August 2026 — Day 07 (batch ops + audit)
+
+### Goal
+Iteration: batch decision calls + a global audit trail with a clean demo path.
+
+### What I built
+- `POST /api/v1/cases/batch/decide` for multi-case rollout from the Home view
+- `GET /api/v1/audit/recent` plus the audit list in the UI
+- Home page copy and batch entry points aligned to the decision loop
+- Case detail + audit trail remain scoped to the same workflow model
+
+### Decisions
+- Batch defaults to `auto_execute=true` to keep the demo fast and coherent
+- Per-case detail remains available, while the global audit is optimized for discovery across many cases
+- Day 07 is not a new architecture layer; it is iteration on the same loop
+
+### Evidence
+- `main.py` batch and audit routes
+- `AuditPage.tsx` and `HomePage.tsx` wiring
+- Local batch and audit flow validation
+
+### Next (Day 08+)
+- Baseline B visibility and policy comparison polish
+
+---

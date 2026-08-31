@@ -12,7 +12,8 @@
 | 04 | 24 Aug 2026 | [day-04.md](./day-04.md) | ✅ | Core workflow: decide → gate → execute → audit |
 | 05 | 25 Aug 2026 | [day-05.md](./day-05.md) | ✅ | EV / model intelligence |
 | 06 | 26 Aug 2026 | [day-06.md](./day-06.md) | ✅ | Eval / MVP lift |
-| 07+ | — | local | ⏸ | Iteration / polish (not yet pushed) |
+| 07 | 27 Aug 2026 | [day-07.md](./day-07.md) | ✅ | Batch decide + global audit |
+| 08+ | — | local | ⏸ | Iteration / polish (not yet pushed) |
 
 External tools checklist: [`docs/EXTERNAL_REQUIREMENTS.md`](../EXTERNAL_REQUIREMENTS.md)
 
