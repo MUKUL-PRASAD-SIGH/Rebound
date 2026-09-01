@@ -19,5 +19,11 @@ Repo skeleton, docs system, schedule.
 - Aug 25: Intelligence  
 - Aug 26: Integration → ugly but working  
 
-## Phase 4+ — Iteration → eval → polish → submit
+## Phase 4+ — compressed completion → test → submit
+
+- Sep 1: Day 09–12 milestones (gate clarity, regression, benchmarks, sensitivity)
+- Sep 2: Day 13–15 milestones (differentiation, demo polish, submission package); build complete
+- Sep 3: protected full-system test and verified fixes only
+- Sep 4: final QA and submission
+
 Per `SCHEDULE.md`.

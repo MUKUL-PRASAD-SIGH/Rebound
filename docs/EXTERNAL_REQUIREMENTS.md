@@ -91,4 +91,4 @@ python -m uvicorn apps.api.main:app --app-dir src --reload --port 8000
 cd src/apps/web && npm install && npm run dev
 ```
 
-Demo path (local until Day 06 push): [`docs/submission/demo-runbook.md`](submission/demo-runbook.md)
+Demo path and Sep 3 rehearsal guide: [`docs/submission/demo-runbook.md`](submission/demo-runbook.md)

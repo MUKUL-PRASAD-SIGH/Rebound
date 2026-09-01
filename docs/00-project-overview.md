@@ -47,11 +47,18 @@ See [`SCHEDULE.md`](../SCHEDULE.md) and frozen [`architecture/mvp-scope.md`](../
 
 | Criterion | How we'll know |
 | --- | --- |
-| Demo works end-to-end | Ugly MVP by Aug 26; polished by Sep 3 |
+| Demo works end-to-end | Ugly MVP by Aug 26; build complete by Sep 2, then full-test on Sep 3 |
 | Clear Razorpay relevance | Test-mode Payment Link and/or documented dry-run |
 | Measurable insight | `lift_value` on held-out/seed batch |
 | Safety | Policy gate + audit; no unrestricted LLM money actions |
 | Proof trail | Build log + commits + evidence |
+
+## Completion timing
+
+- **Sep 1:** Day 09–12 completion in three focused commits
+- **Sep 2:** Day 13–15 completion pushes; project build complete
+- **Sep 3:** dedicated end-to-end test and fix day
+- **Sep 4:** final submission
 
 ## Stack (locked 22 Aug)
 

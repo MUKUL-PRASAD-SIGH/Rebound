@@ -1,6 +1,6 @@
 # 07 — Final Results
 
-> Fill in submission week. Curated story — not the raw notebook dump.
+> Prepare from the Sep 3 test evidence. Curated story — not the raw notebook dump; submit on Sep 4.
 
 ## What we shipped
 

@@ -71,8 +71,8 @@ Adopted 15-day build-heavy calendar in [`SCHEDULE.md`](SCHEDULE.md):
 
 - Research/design: Aug 21–22 only (2 days)
 - MVP build: Aug 23–26 (ugly but working)
-- Continuous testing during build; serious eval Aug 31–Sep 1
-- Submit Sep 5
+- Continuous testing during build; protected full-system validation Sep 3
+- Finish the remaining build by Sep 2; submit Sep 4
 
 Rule after Aug 22: **research only when it answers a concrete implementation question.**
 
@@ -305,5 +305,32 @@ Make the evaluation story visibly compare three behaviors: Baseline A, Baseline 
 
 ### Next (Day 09+)
 - Approval/escalate UX and edge-case hardening
+
+---
+
+## 1 September 2026 — completion-sprint schedule reset
+
+### Decision
+Compress the remaining local Day 09–15 milestones into two delivery days without collapsing their individual commits:
+
+- **Sep 1:** Day 09–12 — gate clarity, combined regression + benchmark evidence, and sensitivity (three commits)
+- **Sep 2:** Day 13–15 — differentiation, demo polish, and submission package (three pushes; build complete)
+- **Sep 3:** protected full-system test, demo rehearsal, evidence capture, and verified fixes only
+- **Sep 4:** final QA and submission
+
+### Guardrail
+The historical entries above retain their original planning context. This schedule reset governs all remaining work and pushes.
+
+---
+
+## 1 September 2026 — Day 09 (gate clarity)
+
+### Delivered
+- Confirmed high-value, low-confidence proposals rewrite to `REWRITE_ESCALATE`
+- Confirmed negative expected value rewrites to the minimum-EV stop path
+- Kept gate result and reason visible in case detail for the operator
+
+### Next
+Ship the combined Day 10–11 regression and benchmark evidence checkpoint.
 
 ---
