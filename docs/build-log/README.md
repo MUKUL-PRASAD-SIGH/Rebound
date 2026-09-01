@@ -15,8 +15,8 @@
 | 07 | 27 Aug 2026 | [day-07.md](./day-07.md) | ✅ | Batch decide + global audit |
 | 08 | 28 Aug 2026 | [day-08.md](./day-08.md) | ✅ | Baseline B policy comparison |
 | 09 | 1 Sep 2026 | [day-09.md](./day-09.md) | ✅ Complete — today commit 1/3 | Gate clarity |
-| 10 | 1 Sep 2026 | [day-10.md](./day-10.md) | ⏳ Local → today shared commit 2/3 | Regression suite |
-| 11 | 1 Sep 2026 | [day-11.md](./day-11.md) | ⏳ Local → today shared commit 2/3 | Benchmarks + edge cases |
+| 10 | 1 Sep 2026 | [day-10.md](./day-10.md) | ✅ Complete — today shared commit 2/3 | Regression suite |
+| 11 | 1 Sep 2026 | [day-11.md](./day-11.md) | ✅ Complete — today shared commit 2/3 | Benchmarks + edge cases |
 | 12 | 1 Sep 2026 | [day-12.md](./day-12.md) | ⏳ Local → today commit 3/3 | Sensitivity |
 | 13 | 2 Sep 2026 | [day-13.md](./day-13.md) | ⏳ Local → tomorrow push 1/3 | Differentiation |
 | 14 | 2 Sep 2026 | [day-14.md](./day-14.md) | ⏳ Local → tomorrow push 2/3 | Demo polish |

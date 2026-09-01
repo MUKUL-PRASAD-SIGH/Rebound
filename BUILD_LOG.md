@@ -334,3 +334,21 @@ The historical entries above retain their original planning context. This schedu
 Ship the combined Day 10–11 regression and benchmark evidence checkpoint.
 
 ---
+
+## 1 September 2026 — Day 10 (regression checkpoint)
+
+### Verified
+- Ran the core FastAPI, workflow, policy, and evaluation suite: **24 passed**
+- Kept evaluation assertions focused on structure and honest simulated labels rather than a cherry-picked lift value
+
+## 1 September 2026 — Day 11 (benchmark evidence)
+
+### Delivered
+- Added reproducible synthetic benchmark instructions and the 60-case corpus reference
+- Documented empty-batch, minimum-EV, confidence, escalation, retry-cap, and stop-path checks
+- Kept all recovery and lift claims explicitly simulated
+
+### Next
+Ship the Day 12 sensitivity checkpoint.
+
+---
