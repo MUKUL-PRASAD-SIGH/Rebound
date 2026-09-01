@@ -352,3 +352,15 @@ Ship the combined Day 10–11 regression and benchmark evidence checkpoint.
 Ship the Day 12 sensitivity checkpoint.
 
 ---
+
+## 1 September 2026 — Day 12 (sensitivity)
+
+### Delivered
+- Added reproducible alternate-seed guidance for evaluation runs
+- Documented that synthetic lift can vary with RNG seed and batch composition
+- Kept Baseline A as the primary comparator and required simulated-share context
+
+### Next
+Begin the Day 13–15 completion sequence on Sep 2; reserve Sep 3 for full-system testing.
+
+---
