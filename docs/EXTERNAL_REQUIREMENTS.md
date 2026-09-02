@@ -21,7 +21,7 @@ Single checklist of everything needed to run Rebound end-to-end. **Nothing here 
 | `pydantic`, `pydantic-settings` | Config + schemas |
 | `python-dotenv` | Load `.env` |
 | `numpy`, `scikit-learn` | Features + recoverability model |
-| `httpx` | FastAPI `TestClient` / optional future Razorpay HTTP | **Required for pytest**; not used in dry_run execute path |
+| `httpx` | FastAPI `TestClient` / Razorpay test-mode HTTP | **Required for pytest**; only calls Razorpay when test mode and both keys are configured |
 | `pytest` | Test suite | `cd src && python -m pytest tests -q` |
 
 ### Default ports
@@ -37,12 +37,12 @@ Single checklist of everything needed to run Rebound end-to-end. **Nothing here 
 
 | Env var | Used for | Required? |
 | --- | --- | --- |
-| `RAZORPAY_KEY_ID` | Future Payment Link create | **No** — dry_run works without keys |
-| `RAZORPAY_KEY_SECRET` | Future Payment Link create | **No** |
-| `RAZORPAY_WEBHOOK_SECRET` | Signature verify (stubbed) | **No** — ingest validates payload shape only |
-| `REBOUND_EXECUTION_MODE` | `dry_run` (default) \| `test_mode` | Defaults to `dry_run` |
+| `RAZORPAY_KEY_ID` | Payment Link Basic Auth key | **No** — dry_run works without keys |
+| `RAZORPAY_KEY_SECRET` | Payment Link Basic Auth secret | **No** — both key and secret are required for a test-mode call |
+| `RAZORPAY_WEBHOOK_SECRET` | Webhook signature verification | **No** — when set, validates `X-Razorpay-Signature` against the raw request body |
+| `REBOUND_EXECUTION_MODE` | `dry_run` (default) \| `test_mode` | `test_mode` plus both test keys is required to create a real Razorpay **test-mode** Payment Link; a key ID not starting `rzp_test_` is rejected before any HTTP call |
 
-**Current behavior:** even with keys present, Payment Link HTTP is still deferred to a safe dry_run placeholder so demos never invent live ₹. Real SDK wiring is optional polish, not a blocker.
+**Execution safety:** the default remains offline `dry_run`. In explicitly configured `test_mode`, Rebound creates one standard Payment Link per decision with notifications/reminders disabled, a deterministic 40-character-or-less `reference_id`, and reconciliation by that reference after an ambiguous request failure. Outcomes remain labelled `simulated`; creating a link is not treated as a recovered payment.
 
 Copy [`.env.example`](../.env.example) → `.env` only if you want to experiment with keys.
 
