@@ -53,6 +53,7 @@ temp/
 *.sqlite
 *.sqlite3
 rebound.db
+src/.release-audit.db
 src/apps/web/node_modules/
 src/apps/web/dist/
 src/apps/web/*.tsbuildinfo
