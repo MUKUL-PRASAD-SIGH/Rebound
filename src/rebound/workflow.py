@@ -217,7 +217,14 @@ def _execute(
     if existing:
         return existing, None
 
-    exec_result = execute_action(action, case.id, case.case_key, case.amount_paise)
+    exec_result = execute_action(
+        action,
+        case.id,
+        case.case_key,
+        case.amount_paise,
+        currency=case.currency,
+        decision_id=decision.id,
+    )
     req_json, resp_json = result_to_json(exec_result)
     attempt = ActionAttempt(
         case_id=case.id,

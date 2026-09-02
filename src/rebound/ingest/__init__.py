@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import hashlib
+import hmac
 from typing import Any
 
 from sqlalchemy import select
@@ -15,6 +17,27 @@ from rebound.schemas.enums import AuditKind, CaseSource, CaseStatus
 
 class IngestValidationError(ValueError):
     pass
+
+
+def verify_razorpay_webhook_signature(
+    raw_body: bytes,
+    signature: str | None,
+    webhook_secret: str,
+) -> bool:
+    """Verify Razorpay's HMAC-SHA256 webhook signature.
+
+    The offline demo deliberately leaves ``webhook_secret`` blank. In that mode,
+    validation is not required because no external Razorpay delivery is enabled.
+    Once a secret is configured, unsigned or mismatched payloads are rejected.
+    """
+    if not webhook_secret:
+        return True
+    if not signature:
+        return False
+    expected = hmac.new(
+        webhook_secret.encode("utf-8"), raw_body, hashlib.sha256
+    ).hexdigest()
+    return hmac.compare_digest(expected, signature)
 
 
 def upsert_from_webhook_payload(db: Session, payload: dict[str, Any]) -> tuple[Case, bool]:

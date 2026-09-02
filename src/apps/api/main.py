@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import json
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -14,7 +15,11 @@ from rebound.audit import append_audit
 from rebound.config import get_settings
 from rebound.db import Case, EvalRun, get_db, init_db
 from rebound.db.models import AuditEvent, Decision
-from rebound.ingest import IngestValidationError, upsert_from_webhook_payload
+from rebound.ingest import (
+    IngestValidationError,
+    upsert_from_webhook_payload,
+    verify_razorpay_webhook_signature,
+)
 from rebound.schemas.api import (
     AuditEventOut,
     CaseDetailOut,
@@ -27,11 +32,18 @@ from rebound.schemas.api import (
     WebhookIngestResponse,
 )
 from rebound.schemas.enums import AuditKind, CaseSource, CaseStatus, GateResult
+from rebound.execute import PaymentLinkExecutionError
 from rebound.workflow import decide_case, execute_latest_decision
 
 settings = get_settings()
 
-app = FastAPI(title="Rebound API", version=__version__)
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    init_db()
+    yield
+
+
+app = FastAPI(title="Rebound API", version=__version__, lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[settings.app_url, "http://localhost:5173", "http://127.0.0.1:5173"],
@@ -39,12 +51,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.on_event("startup")
-def on_startup() -> None:
-    init_db()
-
 
 @app.get("/api/v1/health", response_model=HealthResponse)
 def health() -> HealthResponse:
@@ -163,7 +169,18 @@ def ingest_synthetic(db: Session = Depends(get_db)) -> SyntheticIngestResponse:
 
 
 @app.post("/api/v1/ingest/webhooks/razorpay", response_model=WebhookIngestResponse)
-def ingest_webhook(payload: dict[str, Any], db: Session = Depends(get_db)) -> WebhookIngestResponse:
+async def ingest_webhook(
+    request: Request,
+    payload: dict[str, Any],
+    db: Session = Depends(get_db),
+) -> WebhookIngestResponse:
+    raw_body = await request.body()
+    if not verify_razorpay_webhook_signature(
+        raw_body,
+        request.headers.get("X-Razorpay-Signature"),
+        settings.razorpay_webhook_secret,
+    ):
+        raise HTTPException(status_code=401, detail="invalid_webhook_signature")
     try:
         case, created = upsert_from_webhook_payload(db, payload)
     except IngestValidationError as exc:
@@ -226,6 +243,9 @@ def execute(case_id: str, db: Session = Depends(get_db)) -> ExecuteResponse:
         attempt = execute_latest_decision(db, case)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except PaymentLinkExecutionError as exc:
+        # Do not create an attempt/outcome when the external test-mode request failed.
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
     return ExecuteResponse(
         attempt_id=attempt.id,
         case_id=case.id,
