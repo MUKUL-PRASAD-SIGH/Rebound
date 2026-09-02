@@ -364,3 +364,19 @@ Ship the Day 12 sensitivity checkpoint.
 Begin the Day 13–15 completion sequence on Sep 2; reserve Sep 3 for full-system testing.
 
 ---
+
+## 2 September 2026 — Day 13 (product differentiation + UI)
+
+### Delivered
+- Rebuilt the React experience as a responsive recovery-operations console
+- Made the expected-value, stop, policy-gate, and audit story visible across overview, queue, case, evaluation, and audit views
+- Added deliberate loading, empty, status, success, and error states without changing any API contract
+
+### Verification
+- `cd src && python -m pytest tests -q` → **24 passed**
+- `cd src/apps/web && npm run build` → **passed**
+
+### Next
+Add the local demo ergonomics and runbook (Day 14).
+
+---
