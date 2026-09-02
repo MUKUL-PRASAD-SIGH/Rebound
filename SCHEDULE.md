@@ -12,8 +12,8 @@
 | **Aug 23–26** | **4** | Core development | **End-to-end MVP** |
 | **Aug 27–28** | **2** | Iteration shipped | Batch/audit + Baseline B |
 | **Aug 29–31** | **3** | Deferred milestones | Rolled into the Sep 1–2 completion sprint |
-| **Sep 1 (today)** | **1** | Days 09–12 completion sprint | Gate clarity, regression + benchmark, and sensitivity in three focused commits |
-| **Sep 2 (tomorrow)** | **1** | Days 13–15 completion sprint | Differentiation, demo runbook, submission package — **build complete** |
+| **Sep 1** | **1** | Days 09–12 completion sprint | ✅ Gate clarity, regression + benchmark, and sensitivity in three focused commits |
+| **Sep 2** | **1** | Days 13–15 completion sprint | ✅ Differentiation, demo runbook, submission package — **build complete** |
 | **Sep 3** | **1** | Protected test + fix day | Full demo, regression, evidence capture, necessary fixes only |
 | **Sep 4** | **1** | Final QA + submission | Submit the verified package |
 
@@ -69,7 +69,7 @@ After Aug 26: remaining milestones are compacted into the Sep 1–2 completion s
 
 ---
 
-## Completion sprint — today → submission
+## Completion sprint — build complete → submission
 
 | When | Status / do |
 | --- | --- |
@@ -79,8 +79,8 @@ After Aug 26: remaining milestones are compacted into the Sep 1–2 completion s
 | **Aug 24** | **DONE** — Core workflow decide → gate → execute → audit |
 | **Aug 25** | **DONE** — EV / model intelligence (Day 05) |
 | **Aug 26** | **DONE** — Eval lift + outcome audit (Day 06) |
-| **Sep 1 (today)** | **Days 09–12** — push gate clarity, combined regression + benchmark evidence, and sensitivity notes as three focused commits |
-| **Sep 2 (tomorrow)** | **Days 13–15** — push differentiation, demo polish, and submission package as three separate commits; build complete |
+| **Sep 1** | **DONE** — Days 09–12: gate clarity, regression + benchmark evidence, and sensitivity notes |
+| **Sep 2** | **DONE** — Days 13–15: differentiation, demo polish, and submission package; build complete |
 | **Sep 3** | **No planned feature work** — run the full demo, regression suite, connection checks, capture evidence, and fix only verified issues |
 | **Sep 4** | Final checklist, video, public/package checks, then submit |
 

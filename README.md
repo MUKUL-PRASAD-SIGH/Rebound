@@ -1,7 +1,7 @@
 # Rebound — Razorpay AI Buildathon 2026
 
 [![Track](https://img.shields.io/badge/Track-03%20AI%20Revenue%20Recovery-0A2540?style=for-the-badge)](https://razorpay.com/buildathon/)
-  [![Status](https://img.shields.io/badge/Status-Completion%20Sprint-2E7D32?style=for-the-badge)](#project-status)
+  [![Status](https://img.shields.io/badge/Status-Build%20Complete-2E7D32?style=for-the-badge)](#project-status)
 [![Stack](https://img.shields.io/badge/Stack-FastAPI%20·%20ML%20·%20React-136FEC?style=for-the-badge)](#planned-stack)
 [![License](https://img.shields.io/badge/License-Private%20Lab-6B7280?style=for-the-badge)](#safety--secrets)
 
@@ -56,8 +56,8 @@ Full lock write-up: [`research/12-final-selection.md`](research/12-final-selecti
 | End-to-end MVP (eval lift) | ✅ Done | 26 Aug 2026 |
 | Batch decide + global audit | ✅ Done | 27 Aug 2026 |
 | Baseline B comparison | ✅ Done | 28 Aug 2026 |
-| Completion sprint — Days 09–12 | In progress | 1 Sep 2026 |
-| Completion sprint — Days 13–15 | Scheduled | 2 Sep 2026 |
+| Completion sprint — Days 09–12 | ✅ Done | 1 Sep 2026 |
+| Completion sprint — Days 13–15 | ✅ Build complete | 2 Sep 2026 |
 | Dedicated test + bug-fix day | Scheduled | 3 Sep 2026 |
 | Final QA + submission | Scheduled | 4 Sep 2026 |
 
@@ -109,7 +109,7 @@ razorpay-buildathon-2026/
 └── src/                      # Day 03+ product code
 ```
 
-**Status:** Day 08 baseline comparison is complete. The remaining Day 09–15 milestones are scheduled to finish by 2 Sep; 3 Sep is reserved for testing and fixes, with submission on 4 Sep. Externals: [`docs/EXTERNAL_REQUIREMENTS.md`](docs/EXTERNAL_REQUIREMENTS.md). Logs: [`docs/build-log/`](docs/build-log/README.md).
+**Status:** The project build is complete through Day 15. Sep 3 is reserved for end-to-end testing, evidence capture, and verified fixes only; submission is Sep 4. Externals: [`docs/EXTERNAL_REQUIREMENTS.md`](docs/EXTERNAL_REQUIREMENTS.md). Logs: [`docs/build-log/`](docs/build-log/README.md).
 
 ---
 
@@ -124,8 +124,8 @@ razorpay-buildathon-2026/
 | Aug 25–26 | Intelligence → integrate | ✅ Day 05 EV + Day 06 eval lift |
 | Aug 27 | Batch + audit | ✅ Day 07 batch decide + audit |
 | Aug 28 | Baseline B | ✅ Day 08 policy comparison |
-| Sep 1 (today) | Days 09–12 | Gate clarity, regression + benchmarks, sensitivity — three focused commits |
-| Sep 2 (tomorrow) | Days 13–15 | Differentiation, demo runbook, submission package — build complete |
+| Sep 1 | Days 09–12 | ✅ Gate clarity, regression + benchmarks, sensitivity |
+| Sep 2 | Days 13–15 | ✅ Differentiation, demo runbook, submission package — build complete |
 | Sep 3 | Dedicated validation | Full demo, regression, evidence capture, fixes only |
 | Sep 4 | Final QA + submit | Submit the verified package |
 
@@ -223,5 +223,5 @@ Private lab → curated public artifact near submission.
 ---
 
 <p align="center">
-  <sub>Day 08 baseline comparison complete · remaining build finishes 2 Sep · test 3 Sep · submit 4 Sep</sub>
+  <sub>Build complete · end-to-end validation 3 Sep · submit 4 Sep</sub>
 </p>

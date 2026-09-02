@@ -392,3 +392,15 @@ Add the local demo ergonomics and runbook (Day 14).
 Close the submission package and reserve Sep 3 for verification only.
 
 ---
+
+## 2 September 2026 — Day 15 (submission package)
+
+### Delivered
+- Finalized the pre-submit checklist and the concise 2–3 minute video recording outline
+- Marked the project build complete through Day 15 and aligned README, schedule, and build-log status
+- Kept the Sep 3 scope to end-to-end validation, evidence capture, and verified fixes only
+
+### Release state
+The build is complete. The next implementation change must be justified by a failing check or a reproducible rehearsal issue.
+
+---
