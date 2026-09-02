@@ -19,7 +19,7 @@
 | 11 | 1 Sep 2026 | [day-11.md](./day-11.md) | ✅ Complete — today shared commit 2/3 | Benchmarks + edge cases |
 | 12 | 1 Sep 2026 | [day-12.md](./day-12.md) | ✅ Complete — today commit 3/3 | Sensitivity |
 | 13 | 2 Sep 2026 | [day-13.md](./day-13.md) | ✅ Complete — today commit 1/3 | Differentiation + UI |
-| 14 | 2 Sep 2026 | [day-14.md](./day-14.md) | ⏳ Local → tomorrow push 2/3 | Demo polish |
+| 14 | 2 Sep 2026 | [day-14.md](./day-14.md) | ✅ Complete — today commit 2/3 | Demo polish |
 | 15 | 2 Sep 2026 | [day-15.md](./day-15.md) | ⏳ Local → tomorrow push 3/3 | Submission package / build complete |
 
 **After Day 15:** Sep 3 is a protected full-system test and fix day. Submit the verified package on Sep 4.

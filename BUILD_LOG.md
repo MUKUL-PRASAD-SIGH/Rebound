@@ -380,3 +380,15 @@ Begin the Day 13–15 completion sequence on Sep 2; reserve Sep 3 for full-syste
 Add the local demo ergonomics and runbook (Day 14).
 
 ---
+
+## 2 September 2026 — Day 14 (demo polish)
+
+### Delivered
+- Added root Make targets for API, web, data generation, training, seed, eval, and test workflows
+- Added a short demo runbook with Make and Windows-friendly manual start paths
+- Defined the Sep 3 rehearsal exit criteria: test suite, production build, complete UI flow, and honest simulated-metric language
+
+### Next
+Close the submission package and reserve Sep 3 for verification only.
+
+---
