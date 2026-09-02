@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 import json
+import hashlib
+import hmac
 import sys
 from pathlib import Path
 
+import httpx
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, select
@@ -14,9 +17,14 @@ from sqlalchemy.orm import Session, sessionmaker
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from rebound.db.models import ActionAttempt, Base, Case, Outcome  # noqa: E402
+from rebound.db.models import ActionAttempt, Base, Case, Decision, Outcome  # noqa: E402
 from rebound.db.session import get_db  # noqa: E402
 from rebound.eval import run_eval  # noqa: E402
+from rebound.execute import (  # noqa: E402
+    PaymentLinkConfigurationError,
+    PaymentLinkExecutionError,
+    execute_action,
+)
 from rebound.features import FAILURE_CLASSES, METHODS, extract_features, vectorize  # noqa: E402
 from rebound.ingest import IngestValidationError, upsert_from_webhook_payload  # noqa: E402
 from rebound.policy import gate  # noqa: E402
@@ -352,6 +360,160 @@ def test_execute_without_decision_raises(db: Session):
         execute_latest_decision(db, case)
 
 
+def test_test_mode_payment_link_uses_razorpay_contract(monkeypatch):
+    import rebound.execute as execution
+
+    class TestSettings:
+        rebound_execution_mode = "test_mode"
+        razorpay_key_id = "rzp_test_key"
+        razorpay_key_secret = "rzp_test_secret"
+
+    captured: dict[str, object] = {}
+
+    def fake_post(url: str, **kwargs):
+        captured["url"] = url
+        captured.update(kwargs)
+        request = httpx.Request("POST", url)
+        return httpx.Response(
+            200,
+            json={"id": "plink_test_123", "short_url": "https://rzp.io/i/test", "status": "created"},
+            request=request,
+        )
+
+    monkeypatch.setattr(execution, "get_settings", lambda: TestSettings())
+    monkeypatch.setattr(execution.httpx, "post", fake_post)
+
+    result = execute_action(
+        Action.PAYMENT_LINK,
+        "case-123",
+        "order-123",
+        12_345,
+        currency="INR",
+        decision_id="decision-123",
+    )
+
+    assert result.mode == "live_test"
+    assert result.razorpay_payment_link_id == "plink_test_123"
+    assert captured["url"] == "https://api.razorpay.com/v1/payment_links"
+    assert captured["auth"] == ("rzp_test_key", "rzp_test_secret")
+    body = captured["json"]
+    assert isinstance(body, dict)
+    assert body["amount"] == 12_345
+    assert body["currency"] == "INR"
+    assert body["notify"] == {"sms": False, "email": False}
+    assert len(body["reference_id"]) <= 40
+
+
+def test_test_mode_payment_link_rejects_live_key_without_http(monkeypatch):
+    import rebound.execute as execution
+
+    class LiveKeySettings:
+        rebound_execution_mode = "test_mode"
+        razorpay_key_id = "rzp_live_key"
+        razorpay_key_secret = "live_secret"
+
+    monkeypatch.setattr(execution, "get_settings", lambda: LiveKeySettings())
+    monkeypatch.setattr(
+        execution.httpx,
+        "post",
+        lambda *_args, **_kwargs: pytest.fail("live key must not make an HTTP request"),
+    )
+
+    with pytest.raises(
+        PaymentLinkConfigurationError,
+        match="razorpay_test_mode_requires_rzp_test_key",
+    ):
+        execute_action(
+            Action.PAYMENT_LINK,
+            "case-live-key",
+            "order-live-key",
+            12_345,
+            decision_id="decision-live-key",
+        )
+
+
+def test_test_mode_payment_link_reconciles_ambiguous_request(monkeypatch):
+    import rebound.execute as execution
+
+    class TestSettings:
+        rebound_execution_mode = "test_mode"
+        razorpay_key_id = "rzp_test_key"
+        razorpay_key_secret = "rzp_test_secret"
+
+    captured: dict[str, object] = {}
+
+    def fake_post(url: str, **kwargs):
+        raise httpx.ReadTimeout("timed out", request=httpx.Request("POST", url))
+
+    def fake_get(url: str, **kwargs):
+        captured["url"] = url
+        captured.update(kwargs)
+        reference_id = kwargs["params"]["reference_id"]
+        return httpx.Response(
+            200,
+            json={
+                "payment_links": [
+                    {
+                        "id": "plink_reconciled_123",
+                        "short_url": "https://rzp.io/i/reconciled",
+                        "reference_id": reference_id,
+                        "status": "created",
+                    }
+                ]
+            },
+            request=httpx.Request("GET", url),
+        )
+
+    monkeypatch.setattr(execution, "get_settings", lambda: TestSettings())
+    monkeypatch.setattr(execution.httpx, "post", fake_post)
+    monkeypatch.setattr(execution.httpx, "get", fake_get)
+
+    result = execute_action(
+        Action.PAYMENT_LINK,
+        "case-ambiguous",
+        "order-ambiguous",
+        12_345,
+        decision_id="decision-ambiguous",
+    )
+
+    assert result.razorpay_payment_link_id == "plink_reconciled_123"
+    assert result.response["reconciled_from_reference_lookup"] is True
+    assert captured["url"] == "https://api.razorpay.com/v1/payment_links"
+
+
+def test_api_payment_link_failure_returns_502_without_attempt(client: TestClient, engine, monkeypatch):
+    import rebound.workflow as workflow
+
+    SessionLocal = sessionmaker(bind=engine)
+    with SessionLocal() as session:
+        case = _case(case_key="payment-link-failure")
+        session.add(case)
+        session.flush()
+        session.add(
+            Decision(
+                case_id=case.id,
+                action=Action.PAYMENT_LINK.value,
+                gate_result=GateResult.ALLOW.value,
+                gate_reason="test decision",
+            )
+        )
+        session.commit()
+        case_id = case.id
+
+    def fail_payment_link(*_args, **_kwargs):
+        raise PaymentLinkExecutionError("razorpay_payment_link_request_failed")
+
+    monkeypatch.setattr(workflow, "execute_action", fail_payment_link)
+    response = client.post(f"/api/v1/cases/{case_id}/execute")
+    assert response.status_code == 502
+    assert response.json()["detail"] == "razorpay_payment_link_request_failed"
+
+    with SessionLocal() as session:
+        assert session.scalar(
+            select(ActionAttempt).where(ActionAttempt.case_id == case_id).limit(1)
+        ) is None
+
+
 # --- ingest ---
 
 
@@ -469,3 +631,40 @@ def test_api_seed_decide_execute_eval(client: TestClient, tmp_path, monkeypatch)
 def test_api_webhook_400(client: TestClient):
     r = client.post("/api/v1/ingest/webhooks/razorpay", json={})
     assert r.status_code == 400
+
+
+def test_api_webhook_signature_when_secret_configured(client: TestClient, monkeypatch):
+    from apps.api import main as api_main
+
+    secret = "test-webhook-secret"
+    monkeypatch.setattr(api_main.settings, "razorpay_webhook_secret", secret)
+    payload = {
+        "id": "evt_signed_1",
+        "amount_paise": 12_000,
+        "customer_ref": "cust_signed",
+        "failure_class": "bank_decline",
+    }
+    raw = json.dumps(payload, separators=(",", ":")).encode("utf-8")
+    signature = hmac.new(secret.encode("utf-8"), raw, hashlib.sha256).hexdigest()
+
+    missing = client.post(
+        "/api/v1/ingest/webhooks/razorpay",
+        content=raw,
+        headers={"content-type": "application/json"},
+    )
+    assert missing.status_code == 401
+
+    invalid = client.post(
+        "/api/v1/ingest/webhooks/razorpay",
+        content=raw,
+        headers={"content-type": "application/json", "X-Razorpay-Signature": "wrong"},
+    )
+    assert invalid.status_code == 401
+
+    created = client.post(
+        "/api/v1/ingest/webhooks/razorpay",
+        content=raw,
+        headers={"content-type": "application/json", "X-Razorpay-Signature": signature},
+    )
+    assert created.status_code == 200
+    assert created.json()["created"] is True
