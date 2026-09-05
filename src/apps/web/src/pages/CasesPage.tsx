@@ -24,7 +24,7 @@ export default function CasesPage() {
     const needle = query.trim().toLowerCase();
     if (!needle) return cases;
     return cases.filter((caseRow) =>
-      [caseRow.case_key, caseRow.customer_ref, caseRow.failure_class, caseRow.status]
+      [caseRow.case_key, caseRow.failure_class, caseRow.status]
         .filter(Boolean)
         .some((value) => value?.toLowerCase().includes(needle)),
     );
@@ -70,7 +70,7 @@ export default function CasesPage() {
         {cases.length === 0 && !error ? (
           <EmptyState detail="Start from Overview and seed the 60-case sample batch to populate the recovery portfolio." title="Your queue is ready for its first batch" />
         ) : visibleCases.length === 0 ? (
-          <EmptyState detail="Try another case key, customer, failure class, or status." icon="warning" title="No cases match that search" />
+          <EmptyState detail="Try another case key, failure class, or status." icon="warning" title="No cases match that search" />
         ) : (
           <div className="table-scroll">
             <table className="data-table">
@@ -90,7 +90,7 @@ export default function CasesPage() {
                     <td>
                       <div className="case-cell">
                         <code>{caseRow.case_key}</code>
-                        <span>{caseRow.customer_ref ?? "Unassigned customer"}</span>
+                        <span>Protected account</span>
                       </div>
                     </td>
                     <td><StatusPill tone={statusTone(caseRow.status)}>{titleCase(caseRow.status)}</StatusPill></td>

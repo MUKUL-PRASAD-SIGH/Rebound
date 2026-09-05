@@ -1,16 +1,26 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { getRecentAudit, type AuditEvent } from "../api";
 import { EmptyState, Icon, StatusPill, titleCase } from "../ui";
 
-type AuditEvent = {
-  id: string;
-  case_id: string;
-  kind: string;
-  payload: Record<string, unknown>;
-  created_at: string;
-};
+const displayableContext = new Set([
+  "action",
+  "case_status",
+  "event_type",
+  "gate_result",
+  "gated_action",
+  "label",
+  "policy_version",
+  "result",
+  "source",
+  "value_paise",
+]);
 
-const API = import.meta.env.VITE_API_URL ?? "";
+function eventSummary(payload: Record<string, unknown>): string {
+  const entries = Object.entries(payload).filter(([key]) => displayableContext.has(key));
+  if (!entries.length) return "Context protected";
+  return entries.map(([key, value]) => `${titleCase(key)}: ${String(value)}`).join(" · ");
+}
 
 export default function AuditPage() {
   const [events, setEvents] = useState<AuditEvent[]>([]);
@@ -21,9 +31,7 @@ export default function AuditPage() {
     setLoading(true);
     setError("");
     try {
-      const response = await fetch(`${API}/api/v1/audit/recent`);
-      if (!response.ok) throw new Error(`Could not load audit trail (${response.status})`);
-      setEvents(await response.json());
+      setEvents(await getRecentAudit());
     } catch (requestError) {
       setError(String(requestError));
     } finally {
@@ -74,7 +82,7 @@ export default function AuditPage() {
                   <td className="time-cell">{new Date(event.created_at).toLocaleString()}</td>
                   <td><Link className="case-link" to={`/cases/${event.case_id}`}><code>{event.case_id.slice(0, 8)}</code><Icon name="chevron-right" size={14} /></Link></td>
                   <td><span className="event-label"><span className="event-label__dot" />{titleCase(event.kind)}</span></td>
-                  <td><code className="payload-code">{JSON.stringify(event.payload)}</code></td>
+                  <td><span className="payload-code">{eventSummary(event.payload)}</span></td>
                 </tr>
               ))}</tbody>
             </table>

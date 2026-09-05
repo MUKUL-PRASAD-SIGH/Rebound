@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { listEvalRuns, runEval } from "../api";
 import { formatCurrency, Icon, StatusPill, titleCase } from "../ui";
 
 type EvalSummary = {
@@ -29,8 +30,6 @@ type EvalListItem = {
   created_at: string | null;
 };
 
-const API = import.meta.env.VITE_API_URL ?? "";
-
 const policyDescriptions: Record<string, string> = {
   baseline_a: "Fixed recovery ladder",
   baseline_b: "Alternate heuristic",
@@ -44,9 +43,7 @@ export default function EvalPage() {
   const [busy, setBusy] = useState(false);
 
   async function refreshList() {
-    const response = await fetch(`${API}/api/v1/eval/runs`);
-    if (!response.ok) throw new Error(`Could not load evaluation history (${response.status})`);
-    setList(await response.json());
+    setList(await listEvalRuns<EvalListItem[]>());
   }
 
   useEffect(() => {
@@ -57,9 +54,7 @@ export default function EvalPage() {
     setBusy(true);
     setError("");
     try {
-      const response = await fetch(`${API}/api/v1/eval/runs`, { method: "POST", body: "{}" });
-      if (!response.ok) throw new Error(await response.text());
-      setLatest((await response.json()) as EvalSummary);
+      setLatest((await runEval()) as EvalSummary);
       await refreshList();
     } catch (requestError) {
       setError(String(requestError));

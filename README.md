@@ -11,7 +11,7 @@
 
 <p align="center">
   <a href="https://razorpay.com/buildathon/"><img src="https://img.shields.io/badge/Razorpay-AI%20Buildathon%202026-072654?logo=razorpay&logoColor=white" alt="Razorpay Buildathon" /></a>
-  <img src="https://img.shields.io/badge/%E2%82%B90-test--mode%20first-lightgrey" alt="Zero cost build" />
+  <img src="https://img.shields.io/badge/Workspace-private%20by%20default-136FEC" alt="Private operator workspace" />
 </p>
 
 ---
@@ -29,6 +29,7 @@
 | Safe execution | Runs dry-run and simulated flows by default, with a guarded **MVP mode** Payment Link flow backed by Razorpay Test Mode. |
 | Evaluation lab | Compares Rebound with Baseline A and Baseline B on the same synthetic portfolio. |
 | Audit trail | Records the score, proposal, policy decision, execution, and outcome for every case. |
+| Private operator dashboard | A polished, payment-operations interface inspired by familiar Razorpay workflow patterns—without copying Razorpay branding or exposing customer data. |
 
 ## Why it is research-backed
 
@@ -101,9 +102,13 @@ The current backend regression suite passes; the release record also contains a 
 
 - Never commit `.env`, API keys, webhook secrets, or personal data.
 - Start from [`.env.example`](.env.example); the default mode is offline `dry_run`.
+- All operator routes require `REBOUND_API_TOKEN`; the browser keeps it only in session storage and never displays it.
+- Customer references are pseudonymised before storage. API responses redact credentials, contact data, URLs, notes, and upstream Razorpay fields that are not needed for operations.
 - LLM proposals are schema-constrained, exclude customer identifiers, and fall back to the local EV proposer on any failure.
 - Model **proposes** → policy engine **gates** → allowlisted executor runs → audit is recorded.
 - MVP-mode and synthetic outcomes are always labelled honestly; simulated ₹ are not real revenue.
+
+Security design and verification notes: [security posture](docs/SECURITY.md).
 
 ---
 
@@ -117,6 +122,14 @@ cd src/apps/web && npm install
 ```
 
 ### Start the app
+
+Before starting, copy `.env.example` to `.env` and replace the two `REBOUND_...` placeholder values with separate random strings. For example:
+
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+
+Use the first value for `REBOUND_API_TOKEN` and the second for `REBOUND_PII_HASH_SALT`. On first opening Rebound, enter the operator token into the private access screen. It remains only for the current browser session.
 
 Use two terminals from the repository root:
 
@@ -172,7 +185,9 @@ For the buildathon, use MVP mode only. Razorpay supports Payment Links and sandb
 | Item | Required? | Purpose |
 | --- | --- | --- |
 | Python and Node.js | Yes | Run the API and web app |
-| No key | Yes, for dry-run demo | Seed, evaluate, decide, simulate, and inspect audit trails offline |
+| `REBOUND_API_TOKEN` | Yes | A locally generated operator token that protects the dashboard and all non-webhook API routes |
+| `REBOUND_PII_HASH_SALT` | Recommended | A separate local secret used to pseudonymise customer references at rest |
+| No external key | Yes, for dry-run demo | Seed, evaluate, decide, simulate, and inspect audit trails offline |
 | `RAZORPAY_KEY_ID` + `RAZORPAY_KEY_SECRET` | Only for an MVP-mode Payment Link | Must be the judge’s own `rzp_test_...` Razorpay Test Mode credentials |
 | `RAZORPAY_WEBHOOK_SECRET` + public HTTPS URL | Only for an end-to-end paid-webhook test | Verify Razorpay’s signed delivery; `localhost` cannot receive it |
 | `OPENAI_API_KEY` | Optional | Enables the bounded structured LLM proposer; the deterministic proposer needs no key |
@@ -187,6 +202,8 @@ RAZORPAY_KEY_SECRET=your_test_key_secret
 RAZORPAY_WEBHOOK_SECRET=your_separate_webhook_secret
 
 REBOUND_EXECUTION_MODE=mvp_mode
+REBOUND_API_TOKEN=generate_a_long_random_local_token
+REBOUND_PII_HASH_SALT=generate_a_second_random_local_value
 REBOUND_ENABLE_LLM_PROPOSER=false
 DATABASE_URL=sqlite:///./rebound.db
 POLICY_VERSION=mvp-v1
@@ -194,11 +211,11 @@ APP_URL=http://localhost:5173
 API_URL=http://localhost:8000
 ```
 
-Then seed a fresh batch, open a case whose gated proposal is `payment_link`, and execute that one case. Rebound will create a standard Razorpay Test Mode Payment Link with notifications and reminders disabled, return the link ID and URL, and leave the case **pending**. Avoid bulk MVP-mode execution.
+Then seed a fresh batch, open a case whose gated proposal is `payment_link`, and execute that one case. Rebound creates a standard Razorpay Test Mode Payment Link with notifications and reminders disabled, records it as **pending**, and never exposes its URL in the Rebound UI. Open and complete the link only from the authorised Razorpay dashboard. Avoid bulk MVP-mode execution.
 
 For a genuine webhook check, configure `POST /api/v1/ingest/webhooks/razorpay` on a public HTTPS staging URL or a supported local tunnel, set the same **webhook secret** in Razorpay and `.env`, and subscribe to `payment_link.paid`. Razorpay cannot deliver webhooks to `localhost`; it requires a public URL and signs the raw body with `X-Razorpay-Signature`. Rebound reconciles that event to the original link attempt and marks the case recovered. Follow the [official validation and test guide](https://razorpay.com/docs/webhooks/validate-test/?preferred-country=IN).
 
-If a judge does not want to expose a webhook endpoint, the case screen’s **Refresh Razorpay Test Mode status** control calls the authenticated Payment Link read API and reconciles its `paid`, `expired`, or `cancelled` state. This is a safe fallback for an MVP-mode demo, although webhooks remain the normal event-driven integration.
+If a judge does not want to expose a webhook endpoint, the case screen’s **Refresh payment status** control calls the authenticated Payment Link read API and reconciles its `paid`, `expired`, or `cancelled` state. This is a safe fallback for an MVP-mode demo, although webhooks remain the normal event-driven integration.
 
 MVP mode also exposes these **read-only** endpoints for a judge’s own Test Mode objects:
 
@@ -226,7 +243,7 @@ Use a fresh 60-case batch and run Evaluation before bulk execution. Keep termina
 | --- | --- |
 | Product record | [overview](docs/00-project-overview.md) · [research summary](docs/01-research.md) · [ideation](docs/02-ideation.md) · [architecture narrative](docs/03-architecture.md) · [development log](docs/04-development-log.md) · [experiments](docs/05-experiments.md) · [evaluation](docs/06-evaluation.md) · [final results](docs/07-final-results.md) |
 | Research record | [complete research index](research/README.md) · [locked selection](research/12-final-selection.md) · [differentiation](research/14-differentiation-vs-agent-studio.md) · [baseline policy](research/15-baseline-policies-draft.md) · [source list](research/sources.md) |
-| Technical design | [architecture index](architecture/README.md) — decomposition, scope, system overview, data model, ADRs, and API surface |
+| Technical design | [architecture index](architecture/README.md) — decomposition, scope, system overview, data model, ADRs, and API surface · [security posture](docs/SECURITY.md) |
 | Evidence | [benchmark index](evidence/benchmarks/README.md) · [sensitivity notes](evidence/benchmarks/sensitivity.md) · [research-evidence guide](evidence/research/README.md) |
 | Build history | [build journal](BUILD_LOG.md) · [day-by-day build log](docs/build-log/README.md) · [documentation system](docs/DOCUMENTATION_SYSTEM.md) |
 | Operations and supporting material | [external requirements](docs/EXTERNAL_REQUIREMENTS.md) · [schedule](SCHEDULE.md) · [publish history](docs/WORKER_PUSH_PLAN.md) · [Medium draft](docs/medium-drafts/00-intro-and-series-plan.md) |

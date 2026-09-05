@@ -20,6 +20,25 @@ function statusTone(status: string | undefined): "good" | "neutral" | "warn" {
   return "warn";
 }
 
+const auditContextKeys = new Set([
+  "action",
+  "case_status",
+  "event_type",
+  "gate_result",
+  "gated_action",
+  "label",
+  "policy_version",
+  "result",
+  "source",
+  "value_paise",
+]);
+
+function auditSummary(payload: Record<string, unknown>): string {
+  const entries = Object.entries(payload).filter(([key]) => auditContextKeys.has(key));
+  if (!entries.length) return "Context protected";
+  return entries.map(([key, value]) => `${titleCase(key)}: ${String(value)}`).join(" · ");
+}
+
 export default function CaseDetailPage() {
   const { id } = useParams();
   const [caseRow, setCaseRow] = useState<CaseRow | null>(null);
@@ -117,7 +136,7 @@ export default function CaseDetailPage() {
             <dl className="detail-grid">
               <div><dt>Failure signal</dt><dd>{titleCase(caseRow.failure_class)}</dd></div>
               <div><dt>Attempt</dt><dd>#{caseRow.attempt_n}</dd></div>
-              <div><dt>Customer</dt><dd>{caseRow.customer_ref ?? "—"}</dd></div>
+              <div><dt>Account data</dt><dd>Protected</dd></div>
               <div><dt>Tenure</dt><dd>{caseRow.tenure_days ?? "—"} days</dd></div>
               <div><dt>Latest action</dt><dd>{titleCase(caseRow.latest_decision_action)}</dd></div>
               <div><dt>Gate outcome</dt><dd>{titleCase(caseRow.latest_gate_result)}</dd></div>
@@ -158,11 +177,11 @@ export default function CaseDetailPage() {
               ) : null}
 
               {lastExecute ? (
-                <div className="execution-result"><Icon name="check" size={17} /><span>Executed <code>{titleCase(lastExecute.action)}</code> in <code>{lastExecute.mode}</code> mode.</span></div>
+                <div className="execution-result"><Icon name="check" size={17} /><span><code>{titleCase(lastExecute.action)}</code> action recorded. Refresh authoritative payment state when applicable.</span></div>
               ) : null}
               {lastExecute?.action === "payment_link" && lastExecute.mode === "mvp_mode" ? (
                 <button className="text-button" disabled={busy !== null} onClick={() => void onRefreshPaymentLink()} type="button">
-                  {busy === "refresh" ? "Refreshing Razorpay status…" : "Refresh Razorpay Test Mode status"} <Icon name="refresh" size={15} />
+                  {busy === "refresh" ? "Refreshing payment status…" : "Refresh payment status"} <Icon name="refresh" size={15} />
                 </button>
               ) : null}
               {lastRefresh ? (
@@ -192,7 +211,7 @@ export default function CaseDetailPage() {
                     <tr key={event.id}>
                       <td className="time-cell">{new Date(event.created_at).toLocaleString()}</td>
                       <td><span className="event-label"><span className="event-label__dot" />{titleCase(event.kind)}</span></td>
-                      <td><code className="payload-code">{JSON.stringify(event.payload)}</code></td>
+                      <td><span className="payload-code">{auditSummary(event.payload)}</span></td>
                     </tr>
                   ))}</tbody>
                 </table>

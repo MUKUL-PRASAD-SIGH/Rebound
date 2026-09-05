@@ -1,9 +1,11 @@
+import { FormEvent, useState } from "react";
 import { Link, Navigate, NavLink, Route, Routes } from "react-router-dom";
 import AuditPage from "./pages/AuditPage";
 import CaseDetailPage from "./pages/CaseDetailPage";
 import CasesPage from "./pages/CasesPage";
 import EvalPage from "./pages/EvalPage";
 import HomePage from "./pages/HomePage";
+import { clearOperatorToken, getMetrics, getOperatorToken, setOperatorToken } from "./api";
 import { Icon, type IconName } from "./ui";
 
 const navigation: { label: string; to: string; icon: IconName }[] = [
@@ -14,6 +16,50 @@ const navigation: { label: string; to: string; icon: IconName }[] = [
 ];
 
 export default function App() {
+  const [authorised, setAuthorised] = useState(Boolean(getOperatorToken()));
+  const [token, setToken] = useState("");
+  const [accessError, setAccessError] = useState("");
+  const [checkingAccess, setCheckingAccess] = useState(false);
+
+  async function unlock(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const candidate = token.trim();
+    if (!candidate) return;
+    setCheckingAccess(true);
+    setAccessError("");
+    setOperatorToken(candidate);
+    try {
+      await getMetrics();
+      setAuthorised(true);
+      setToken("");
+    } catch {
+      clearOperatorToken();
+      setAccessError("Access could not be verified. Check REBOUND_API_TOKEN and try again.");
+    } finally {
+      setCheckingAccess(false);
+    }
+  }
+
+  if (!authorised) {
+    return (
+      <main className="access-gate">
+        <section className="access-gate__panel">
+          <div className="access-gate__brand"><span className="brand__mark"><Icon name="spark" size={21} /></span><strong>Rebound</strong></div>
+          <span className="eyebrow"><Icon name="shield" size={14} /> Private operator workspace</span>
+          <h1>Make every payment failure a comeback.</h1>
+          <p>Enter the local operator token to access recovery decisions, audit evidence, and connected payment controls.</p>
+          <form onSubmit={(event) => void unlock(event)}>
+            <label htmlFor="operator-token">Operator access token</label>
+            <input autoComplete="current-password" id="operator-token" onChange={(event) => setToken(event.target.value)} placeholder="Stored in your local .env" type="password" value={token} />
+            {accessError ? <p className="access-gate__error">{accessError}</p> : null}
+            <button className="button button--primary" disabled={checkingAccess || !token.trim()} type="submit"><Icon name={checkingAccess ? "refresh" : "shield"} className={checkingAccess ? "spin" : undefined} size={16} />{checkingAccess ? "Verifying…" : "Unlock workspace"}</button>
+          </form>
+          <small>Your token stays in this browser session and is never displayed by Rebound.</small>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <div className="app-frame">
       <aside className="sidebar">
@@ -21,7 +67,7 @@ export default function App() {
           <span className="brand__mark"><Icon name="spark" size={19} /></span>
           <span>
             <strong>Rebound</strong>
-            <small>Recovery operations</small>
+            <small>Make every failure a comeback</small>
           </span>
         </Link>
 
@@ -41,20 +87,20 @@ export default function App() {
         <div className="sidebar__footer">
           <div className="system-card">
             <div className="system-card__line"><span className="live-dot" /> System ready</div>
-            <p>All decisions are policy-gated and MVP-mode safe.</p>
+            <p>Every action is policy-gated, privacy-minimised, and auditable.</p>
           </div>
-          <span className="environment-label"><Icon name="shield" size={14} /> MVP-mode workspace</span>
+          <span className="environment-label"><Icon name="shield" size={14} /> Safeguards enforced</span>
         </div>
       </aside>
 
       <div className="app-body">
         <header className="topbar">
           <div className="topbar__context">
-            <span className="topbar__eyebrow">Revenue recovery controller</span>
+            <span className="topbar__eyebrow">Revenue recovery command centre</span>
             <span className="topbar__divider" />
             <span>Policy-first operations</span>
           </div>
-          <div className="topbar__status"><span className="live-dot" /> API connected when running</div>
+          <button className="topbar__lock" onClick={() => { clearOperatorToken(); setAuthorised(false); }} type="button"><Icon name="shield" size={14} /> Lock workspace</button>
         </header>
         <main className="content">
           <Routes>

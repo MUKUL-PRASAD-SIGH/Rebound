@@ -1,4 +1,5 @@
 const API = import.meta.env.VITE_API_URL ?? "";
+const ACCESS_TOKEN_KEY = "rebound.operator-access-token";
 
 export type MetricsSummary = {
   cases_total: number;
@@ -17,7 +18,6 @@ export type CaseRow = {
   failure_class: string;
   method: string;
   attempt_n: number;
-  customer_ref?: string;
   tenure_days?: number;
   currency?: string;
   source?: string;
@@ -71,50 +71,76 @@ async function jsonOrThrow<T>(res: Response): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+export function getOperatorToken(): string {
+  return sessionStorage.getItem(ACCESS_TOKEN_KEY) ?? "";
+}
+
+export function setOperatorToken(token: string): void {
+  sessionStorage.setItem(ACCESS_TOKEN_KEY, token);
+}
+
+export function clearOperatorToken(): void {
+  sessionStorage.removeItem(ACCESS_TOKEN_KEY);
+}
+
+async function operatorFetch(path: string, init: RequestInit = {}): Promise<Response> {
+  const headers = new Headers(init.headers);
+  headers.set("X-Rebound-Token", getOperatorToken());
+  return fetch(`${API}${path}`, { ...init, headers });
+}
+
 export async function getHealth(): Promise<{ status: string; version: string }> {
   return jsonOrThrow(await fetch(`${API}/api/v1/health`));
 }
 
 export async function getMetrics(): Promise<MetricsSummary> {
-  return jsonOrThrow(await fetch(`${API}/api/v1/metrics/summary`));
+  return jsonOrThrow(await operatorFetch("/api/v1/metrics/summary"));
 }
 
 export async function listCases(): Promise<CaseRow[]> {
-  return jsonOrThrow(await fetch(`${API}/api/v1/cases`));
+  return jsonOrThrow(await operatorFetch("/api/v1/cases"));
 }
 
 export async function getCase(id: string): Promise<CaseRow> {
-  return jsonOrThrow(await fetch(`${API}/api/v1/cases/${id}`));
+  return jsonOrThrow(await operatorFetch(`/api/v1/cases/${id}`));
 }
 
 export async function getCaseAudit(id: string): Promise<AuditEvent[]> {
-  return jsonOrThrow(await fetch(`${API}/api/v1/cases/${id}/audit`));
+  return jsonOrThrow(await operatorFetch(`/api/v1/cases/${id}/audit`));
 }
 
 export async function seedSynthetic(): Promise<{ inserted: number; skipped: number }> {
-  return jsonOrThrow(await fetch(`${API}/api/v1/ingest/synthetic`, { method: "POST" }));
+  return jsonOrThrow(await operatorFetch("/api/v1/ingest/synthetic", { method: "POST" }));
 }
 
 export async function decideCase(id: string, autoExecute = false): Promise<DecideResult> {
   const q = autoExecute ? "?auto_execute=true" : "";
-  return jsonOrThrow(await fetch(`${API}/api/v1/cases/${id}/decide${q}`, { method: "POST" }));
+  return jsonOrThrow(await operatorFetch(`/api/v1/cases/${id}/decide${q}`, { method: "POST" }));
 }
 
 export async function executeCase(id: string): Promise<ExecuteResult> {
-  return jsonOrThrow(await fetch(`${API}/api/v1/cases/${id}/execute`, { method: "POST" }));
+  return jsonOrThrow(await operatorFetch(`/api/v1/cases/${id}/execute`, { method: "POST" }));
 }
 
 export async function refreshPaymentLink(id: string): Promise<PaymentLinkRefreshResult> {
-  return jsonOrThrow(await fetch(`${API}/api/v1/cases/${id}/refresh-payment-link`, { method: "POST" }));
+  return jsonOrThrow(await operatorFetch(`/api/v1/cases/${id}/refresh-payment-link`, { method: "POST" }));
 }
 
 export async function batchDecide(autoExecute = true): Promise<{ count: number }> {
   const q = autoExecute ? "?auto_execute=true" : "?auto_execute=false";
-  return jsonOrThrow(await fetch(`${API}/api/v1/cases/batch/decide${q}`, { method: "POST" }));
+  return jsonOrThrow(await operatorFetch(`/api/v1/cases/batch/decide${q}`, { method: "POST" }));
 }
 
 export async function runEval(seed = 42): Promise<Record<string, unknown>> {
   return jsonOrThrow(
-    await fetch(`${API}/api/v1/eval/runs?seed=${seed}`, { method: "POST", body: "{}" }),
+    await operatorFetch(`/api/v1/eval/runs?seed=${seed}`, { method: "POST", body: "{}" }),
   );
+}
+
+export async function listEvalRuns<T>(): Promise<T> {
+  return jsonOrThrow(await operatorFetch("/api/v1/eval/runs"));
+}
+
+export async function getRecentAudit(): Promise<AuditEvent[]> {
+  return jsonOrThrow(await operatorFetch("/api/v1/audit/recent"));
 }
