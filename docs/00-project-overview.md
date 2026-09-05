@@ -58,7 +58,7 @@ See [`SCHEDULE.md`](../SCHEDULE.md) and frozen [`architecture/mvp-scope.md`](../
 - **Sep 1:** Day 09–12 completion in three focused commits
 - **Sep 2:** Day 13–15 completion pushes; project build complete
 - **Sep 3:** dedicated end-to-end test and fix day
-- **Sep 4:** final submission
+- **Sep 5:** final submission
 
 ## Stack (locked 22 Aug)
 
@@ -83,6 +83,7 @@ Architecture: [`architecture/README.md`](../architecture/README.md)
 | Architecture | [`architecture/README.md`](../architecture/README.md) |
 | MVP scope | [`architecture/mvp-scope.md`](../architecture/mvp-scope.md) |
 | Schedule | [`SCHEDULE.md`](../SCHEDULE.md) |
-| Demo | TBD |
+| Local run + demo flow | [`README.md`](../README.md#run-locally) |
+| Razorpay test-mode check | [`README.md`](../README.md#test-razorpay-safely-no-production-mode) |
 | Demo video | TBD |
 | Public repo | https://github.com/MUKUL-PRASAD-SIGH/razorpay-buildathon-2026 |
