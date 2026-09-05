@@ -28,7 +28,7 @@ from rebound.execute import (  # noqa: E402
 from rebound.features import FAILURE_CLASSES, METHODS, extract_features, vectorize  # noqa: E402
 from rebound.ingest import IngestValidationError, upsert_from_webhook_payload  # noqa: E402
 from rebound.policy import gate  # noqa: E402
-from rebound.propose import propose_ev, propose_rules_ladder  # noqa: E402
+from rebound.propose import propose_ev, propose_for_case, propose_rules_ladder  # noqa: E402
 from rebound.schemas.api import ProposalPayload  # noqa: E402
 from rebound.schemas.enums import (  # noqa: E402
     Action,
@@ -36,6 +36,7 @@ from rebound.schemas.enums import (  # noqa: E402
     CaseSource,
     CaseStatus,
     GateResult,
+    ProposerKind,
 )
 from rebound.scoring import (  # noqa: E402
     action_cost,
@@ -178,6 +179,112 @@ def test_propose_ev_diverse_actions(db: Session):
         db.flush()
         actions.add(propose_ev(db, case).action.value)
     assert len(actions) >= 2
+
+
+def test_openai_llm_proposer_uses_structured_action_and_deterministic_metrics(db: Session, monkeypatch):
+    import rebound.propose as proposer
+
+    class LlmSettings:
+        rebound_enable_llm_proposer = True
+        openai_api_key = "test-openai-key"
+        openai_model = "gpt-4o-mini"
+
+    case = _case(case_key="llm-proposal", amount_paise=80_000, failure_class="expired_card")
+    db.add(case)
+    db.commit()
+    ev = propose_ev(db, case)
+    captured: dict[str, object] = {}
+
+    def fake_post(url: str, **kwargs):
+        captured["url"] = url
+        captured.update(kwargs)
+        return httpx.Response(
+            200,
+            json={
+                "status": "completed",
+                "output_text": json.dumps(
+                    {
+                        "action": ev.action.value,
+                        "rationale": "The deterministic score supports this bounded action.",
+                    }
+                ),
+            },
+            request=httpx.Request("POST", url),
+        )
+
+    monkeypatch.setattr(proposer, "get_settings", lambda: LlmSettings())
+    monkeypatch.setattr(proposer.httpx, "post", fake_post)
+
+    payload, kind = propose_for_case(db, case)
+
+    assert kind == ProposerKind.LLM
+    assert payload.action == ev.action
+    assert payload.p_recover == pytest.approx(ev.p_recover)
+    assert payload.ev == pytest.approx(ev.ev)
+    assert payload.rationale.startswith("llm_openai_selected")
+    assert captured["url"] == "https://api.openai.com/v1/responses"
+    request_body = captured["json"]
+    assert isinstance(request_body, dict)
+    assert request_body["store"] is False
+    assert request_body["text"]["format"]["type"] == "json_schema"
+    input_body = json.loads(request_body["input"])
+    assert "customer_ref" not in input_body["case"]
+    assert "case_key" not in input_body["case"]
+
+
+def test_openai_llm_proposer_falls_back_when_output_is_invalid(db: Session, monkeypatch):
+    import rebound.propose as proposer
+
+    class LlmSettings:
+        rebound_enable_llm_proposer = True
+        openai_api_key = "test-openai-key"
+        openai_model = "gpt-4o-mini"
+
+    case = _case(case_key="llm-invalid-output", amount_paise=80_000)
+    db.add(case)
+    db.commit()
+
+    def fake_post(url: str, **_kwargs):
+        return httpx.Response(
+            200,
+            json={
+                "status": "completed",
+                "output_text": '{"action":"outside_allowlist","rationale":"unsafe"}',
+            },
+            request=httpx.Request("POST", url),
+        )
+
+    monkeypatch.setattr(proposer, "get_settings", lambda: LlmSettings())
+    monkeypatch.setattr(proposer.httpx, "post", fake_post)
+
+    payload, kind = propose_for_case(db, case)
+
+    assert kind == ProposerKind.MODEL
+    assert payload.rationale.startswith("ev_max")
+
+
+def test_openai_llm_proposer_is_off_without_flag(db: Session, monkeypatch):
+    import rebound.propose as proposer
+
+    class DisabledLlmSettings:
+        rebound_enable_llm_proposer = False
+        openai_api_key = "test-openai-key"
+        openai_model = "gpt-4o-mini"
+
+    case = _case(case_key="llm-disabled", amount_paise=80_000)
+    db.add(case)
+    db.commit()
+
+    monkeypatch.setattr(proposer, "get_settings", lambda: DisabledLlmSettings())
+    monkeypatch.setattr(
+        proposer.httpx,
+        "post",
+        lambda *_args, **_kwargs: pytest.fail("disabled LLM proposer must not call OpenAI"),
+    )
+
+    _, kind = propose_for_case(db, case)
+
+    assert kind == ProposerKind.MODEL
 
 
 # --- policy ---
