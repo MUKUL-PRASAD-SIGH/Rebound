@@ -12,8 +12,10 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from rebound.audit import append_audit
+from rebound.config import get_settings
 from rebound.db.models import ActionAttempt, Case, Outcome, RazorpayWebhookEvent
 from rebound.schemas.enums import Action, AuditKind, CaseSource, CaseStatus, OutcomeLabel, OutcomeResult
+from rebound.security import pseudonymize_customer_ref, redact_sensitive
 
 
 class IngestValidationError(ValueError):
@@ -210,7 +212,11 @@ def upsert_from_webhook_payload(
         status=CaseStatus.OPEN.value,
         amount_paise=amount,
         currency=entity.get("currency") or "INR",
-        customer_ref=customer_ref,
+        # Customer references are pseudonymised before they reach the local DB.
+        customer_ref=pseudonymize_customer_ref(
+            customer_ref,
+            salt=get_settings().rebound_pii_hash_salt,
+        ),
         failure_code=entity.get("error_code") or payload.get("failure_code"),
         failure_class=payload.get("failure_class")
         or entity.get("error_reason")
@@ -218,7 +224,7 @@ def upsert_from_webhook_payload(
         attempt_n=int(payload.get("attempt_n") or 1),
         tenure_days=int(payload.get("tenure_days") or 30),
         method=str(entity.get("method") or payload.get("method") or "upi"),
-        payload_json=json.dumps(payload),
+        payload_json=json.dumps(redact_sensitive(payload)),
     )
     db.add(case)
     db.flush()
@@ -270,7 +276,7 @@ def process_razorpay_webhook(
                 external_event_id=event_id,
                 event_type=event_type,
                 case_id=case.id,
-                payload_json=json.dumps(payload),
+                payload_json=json.dumps(redact_sensitive(payload)),
             )
         )
         db.flush()

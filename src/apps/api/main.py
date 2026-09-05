@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import json
+import secrets
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
 
-from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -40,6 +42,13 @@ from rebound.schemas.api import (
     WebhookIngestResponse,
 )
 from rebound.schemas.enums import AuditKind, CaseSource, CaseStatus, GateResult
+from rebound.security import (
+    pseudonymize_customer_ref,
+    public_customer_label,
+    redact_sensitive,
+    safe_invoice_collection,
+    safe_subscription,
+)
 from rebound.execute import PaymentLinkExecutionError
 from rebound.workflow import decide_case, execute_latest_decision
 
@@ -51,7 +60,14 @@ async def lifespan(_: FastAPI):
     yield
 
 
-app = FastAPI(title="Rebound API", version=__version__, lifespan=lifespan)
+app = FastAPI(
+    title="Rebound API",
+    version=__version__,
+    lifespan=lifespan,
+    docs_url=None,
+    redoc_url=None,
+    openapi_url=None,
+)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[settings.app_url, "http://localhost:5173", "http://127.0.0.1:5173"],
@@ -59,6 +75,61 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+def _is_operator_route(path: str) -> bool:
+    return path.startswith("/api/v1/") and path not in {
+        "/api/v1/health",
+        "/api/v1/ingest/webhooks/razorpay",
+    }
+
+
+@app.middleware("http")
+async def require_operator_access(request: Request, call_next):
+    """Protect every operator endpoint with a custom-header bearer secret.
+
+    The webhook route is intentionally exempt because Razorpay authenticates it
+    with its HMAC signature over the raw request body. CORS preflight is also
+    exempt so permitted browser origins can send the custom header.
+    """
+    if request.method == "OPTIONS" or not _is_operator_route(request.url.path):
+        return await call_next(request)
+    expected = settings.rebound_api_token
+    if not expected:
+        return JSONResponse(status_code=503, content={"detail": "rebound_api_token_required"})
+    supplied = request.headers.get("X-Rebound-Token", "")
+    if not supplied or not secrets.compare_digest(supplied, expected):
+        return JSONResponse(status_code=401, content={"detail": "operator_access_required"})
+    return await call_next(request)
+
+
+def _case_out(case: Case) -> CaseOut:
+    return CaseOut(
+        id=case.id,
+        case_key=case.case_key,
+        source=case.source,
+        status=CaseStatus(case.status),
+        amount_paise=case.amount_paise,
+        currency=case.currency,
+        customer_ref=public_customer_label(case.customer_ref),
+        failure_class=case.failure_class,
+        attempt_n=case.attempt_n,
+        tenure_days=case.tenure_days,
+        method=case.method,
+        created_at=case.created_at,
+        updated_at=case.updated_at,
+    )
+
+
+def _audit_out(row: AuditEvent) -> AuditEventOut:
+    return AuditEventOut(
+        id=row.id,
+        case_id=row.case_id,
+        kind=row.kind,
+        payload=redact_sensitive(json.loads(row.payload_json or "{}")),
+        created_at=row.created_at,
+    )
+
 
 @app.get("/api/v1/health", response_model=HealthResponse)
 def health() -> HealthResponse:
@@ -81,8 +152,12 @@ def metrics_summary(db: Session = Depends(get_db)) -> MetricsSummary:
 
 
 @app.get("/api/v1/cases", response_model=list[CaseOut])
-def list_cases(db: Session = Depends(get_db), limit: int = 100) -> list[Case]:
-    return list(db.scalars(select(Case).order_by(Case.created_at.desc()).limit(limit)).all())
+def list_cases(
+    db: Session = Depends(get_db),
+    limit: int = Query(default=100, ge=1, le=200),
+) -> list[CaseOut]:
+    rows = db.scalars(select(Case).order_by(Case.created_at.desc()).limit(limit)).all()
+    return [_case_out(case) for case in rows]
 
 
 @app.get("/api/v1/cases/{case_id}", response_model=CaseDetailOut)
@@ -100,19 +175,7 @@ def get_case(case_id: str, db: Session = Depends(get_db)) -> CaseDetailOut:
         except ValueError:
             gate = None
     return CaseDetailOut(
-        id=case.id,
-        case_key=case.case_key,
-        source=case.source,
-        status=CaseStatus(case.status),
-        amount_paise=case.amount_paise,
-        currency=case.currency,
-        customer_ref=case.customer_ref,
-        failure_class=case.failure_class,
-        attempt_n=case.attempt_n,
-        tenure_days=case.tenure_days,
-        method=case.method,
-        created_at=case.created_at,
-        updated_at=case.updated_at,
+        **_case_out(case).model_dump(),
         failure_code=case.failure_code,
         external_event_id=case.external_event_id,
         latest_decision_action=latest.action if latest else None,
@@ -127,16 +190,7 @@ def case_audit(case_id: str, db: Session = Depends(get_db)) -> list[AuditEventOu
     rows = db.scalars(
         select(AuditEvent).where(AuditEvent.case_id == case_id).order_by(AuditEvent.created_at.asc())
     ).all()
-    return [
-        AuditEventOut(
-            id=r.id,
-            case_id=r.case_id,
-            kind=r.kind,
-            payload=json.loads(r.payload_json or "{}"),
-            created_at=r.created_at,
-        )
-        for r in rows
-    ]
+    return [_audit_out(row) for row in rows]
 
 
 @app.post("/api/v1/ingest/synthetic", response_model=SyntheticIngestResponse)
@@ -159,13 +213,15 @@ def ingest_synthetic(db: Session = Depends(get_db)) -> SyntheticIngestResponse:
             status=CaseStatus.OPEN.value,
             amount_paise=row["amount_paise"],
             currency=row.get("currency", "INR"),
-            customer_ref=row["customer_ref"],
+            customer_ref=pseudonymize_customer_ref(
+                row["customer_ref"], salt=settings.rebound_pii_hash_salt
+            ),
             failure_code=row.get("failure_code"),
             failure_class=row.get("failure_class", "unknown"),
             attempt_n=row.get("attempt_n", 1),
             tenure_days=row.get("tenure_days", 30),
             method=row.get("method", "upi"),
-            payload_json=json.dumps(row),
+            payload_json=json.dumps(redact_sensitive(row)),
         )
         db.add(case)
         db.flush()
@@ -183,8 +239,8 @@ async def ingest_webhook(
     db: Session = Depends(get_db),
 ) -> WebhookIngestResponse:
     raw_body = await request.body()
-    if settings.rebound_execution_mode == "mvp_mode" and not settings.razorpay_webhook_secret:
-        raise HTTPException(status_code=503, detail="razorpay_mvp_webhook_secret_required")
+    if not settings.razorpay_webhook_secret:
+        raise HTTPException(status_code=503, detail="razorpay_webhook_secret_required")
     if not verify_razorpay_webhook_signature(
         raw_body,
         request.headers.get("X-Razorpay-Signature"),
@@ -271,7 +327,7 @@ def execute(case_id: str, db: Session = Depends(get_db)) -> ExecuteResponse:
         case_id=case.id,
         action=attempt.action,
         mode=attempt.mode,
-        response=json.loads(attempt.response_json or "{}"),
+        response=redact_sensitive(json.loads(attempt.response_json or "{}")),
         razorpay_payment_link_id=attempt.razorpay_payment_link_id,
     )
 
@@ -318,7 +374,7 @@ def refresh_payment_link(case_id: str, db: Session = Depends(get_db)) -> dict[st
 def get_razorpay_subscription(subscription_id: str) -> dict[str, Any]:
     """Read one Razorpay Test Mode subscription; no changes are permitted."""
     try:
-        return fetch_subscription(subscription_id)
+        return safe_subscription(fetch_subscription(subscription_id))
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except RazorpayMvpRequestError as exc:
@@ -329,7 +385,7 @@ def get_razorpay_subscription(subscription_id: str) -> dict[str, Any]:
 def get_razorpay_subscription_invoices(subscription_id: str) -> dict[str, Any]:
     """Read Razorpay Test Mode invoices for a subscription; no changes are permitted."""
     try:
-        return fetch_subscription_invoices(subscription_id)
+        return safe_invoice_collection(fetch_subscription_invoices(subscription_id))
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except RazorpayMvpRequestError as exc:
@@ -337,7 +393,10 @@ def get_razorpay_subscription_invoices(subscription_id: str) -> dict[str, Any]:
 
 
 @app.get("/api/v1/eval/runs")
-def list_eval_runs(db: Session = Depends(get_db), limit: int = 20) -> list[dict[str, Any]]:
+def list_eval_runs(
+    db: Session = Depends(get_db),
+    limit: int = Query(default=20, ge=1, le=100),
+) -> list[dict[str, Any]]:
     rows = list(db.scalars(select(EvalRun).order_by(EvalRun.created_at.desc()).limit(limit)).all())
     out = []
     for run in rows:
@@ -375,17 +434,11 @@ def get_eval_run(run_id: str, db: Session = Depends(get_db)) -> dict[str, Any]:
 
 
 @app.get("/api/v1/audit/recent")
-def recent_audit(db: Session = Depends(get_db), limit: int = 50) -> list[AuditEventOut]:
+def recent_audit(
+    db: Session = Depends(get_db),
+    limit: int = Query(default=50, ge=1, le=200),
+) -> list[AuditEventOut]:
     rows = list(
         db.scalars(select(AuditEvent).order_by(AuditEvent.created_at.desc()).limit(limit)).all()
     )
-    return [
-        AuditEventOut(
-            id=r.id,
-            case_id=r.case_id,
-            kind=r.kind,
-            payload=json.loads(r.payload_json or "{}"),
-            created_at=r.created_at,
-        )
-        for r in rows
-    ]
+    return [_audit_out(row) for row in rows]

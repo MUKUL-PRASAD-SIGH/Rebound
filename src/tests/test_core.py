@@ -77,7 +77,8 @@ def db(engine) -> Session:
 
 
 @pytest.fixture()
-def client(engine):
+def client(engine, monkeypatch):
+    from apps.api import main as api_main
     from apps.api.main import app
     from rebound.db import session as db_session
 
@@ -91,10 +92,12 @@ def client(engine):
             session.close()
 
     # Prevent startup from touching the real rebound.db for API tests
+    monkeypatch.setattr(api_main.settings, "rebound_api_token", "test-operator-token")
     app.dependency_overrides[get_db] = _override
     original_init = db_session.init_db
     db_session.init_db = lambda: None  # type: ignore[assignment]
     with TestClient(app) as c:
+        c.headers.update({"X-Rebound-Token": "test-operator-token"})
         yield c
     db_session.init_db = original_init
     app.dependency_overrides.clear()
@@ -572,6 +575,7 @@ def test_mvp_mode_payment_link_uses_razorpay_contract(monkeypatch):
 
     assert result.mode == "mvp_mode"
     assert result.razorpay_payment_link_id == "plink_test_123"
+    assert "url" not in result.response
     assert captured["url"] == "https://api.razorpay.com/v1/payment_links"
     assert captured["auth"] == ("rzp_test_key", "rzp_test_secret")
     body = captured["json"]
@@ -798,12 +802,21 @@ def test_api_read_only_subscription_routes(client: TestClient, monkeypatch):
     monkeypatch.setattr(
         api_main,
         "fetch_subscription",
-        lambda subscription_id: {"id": subscription_id, "status": "active"},
+        lambda subscription_id: {
+            "id": subscription_id,
+            "status": "active",
+            "email": "private@example.com",
+            "short_url": "https://private.example/link",
+            "plan_id": "plan_safe",
+        },
     )
     monkeypatch.setattr(
         api_main,
         "fetch_subscription_invoices",
-        lambda subscription_id: {"count": 1, "items": [{"subscription_id": subscription_id}]},
+        lambda subscription_id: {
+            "count": 1,
+            "items": [{"subscription_id": subscription_id, "contact": "+919999999999", "amount": 12_000}],
+        },
     )
 
     subscription = client.get("/api/v1/razorpay/subscriptions/sub_read_123")
@@ -811,8 +824,11 @@ def test_api_read_only_subscription_routes(client: TestClient, monkeypatch):
 
     assert subscription.status_code == 200
     assert subscription.json()["status"] == "active"
+    assert "email" not in subscription.json()
+    assert "short_url" not in subscription.json()
     assert invoices.status_code == 200
     assert invoices.json()["count"] == 1
+    assert "contact" not in invoices.json()["items"][0]
 
 
 # --- ingest ---
@@ -844,6 +860,25 @@ def test_webhook_upsert_and_replay(db: Session):
     assert created1 is True
     assert created2 is False
     assert c1.id == c2.id
+
+
+def test_webhook_pseudonymizes_and_redacts_pii_at_rest(db: Session):
+    payload = {
+        "id": "evt_private_1",
+        "amount_paise": 12_000,
+        "customer_ref": "alice@example.com",
+        "email": "alice@example.com",
+        "contact": "+919999999999",
+        "notes": {"private": "do-not-store"},
+    }
+    case, created = upsert_from_webhook_payload(db, payload)
+
+    assert created is True
+    assert case.customer_ref.startswith("cust_")
+    assert "alice@example.com" not in case.customer_ref
+    assert "alice@example.com" not in case.payload_json
+    assert "+919999999999" not in case.payload_json
+    assert "do-not-store" not in case.payload_json
 
 
 # --- eval ---
@@ -888,6 +923,14 @@ def test_api_health(client: TestClient):
     assert r.json()["status"] == "ok"
 
 
+def test_api_operator_routes_require_a_valid_token(client: TestClient):
+    denied = client.get("/api/v1/cases", headers={"X-Rebound-Token": "not-the-token"})
+    assert denied.status_code == 401
+
+    allowed = client.get("/api/v1/cases")
+    assert allowed.status_code == 200
+
+
 def test_api_eval_empty_400(client: TestClient):
     r = client.post("/api/v1/eval/runs")
     assert r.status_code == 404 or r.status_code == 400
@@ -903,6 +946,7 @@ def test_api_seed_decide_execute_eval(client: TestClient, tmp_path, monkeypatch)
 
     cases = client.get("/api/v1/cases").json()
     cid = cases[0]["id"]
+    assert cases[0]["customer_ref"] == "Protected account"
 
     bad = client.post(f"/api/v1/cases/{cid}/execute")
     # may 400 if no decision yet
@@ -929,15 +973,15 @@ def test_api_seed_decide_execute_eval(client: TestClient, tmp_path, monkeypatch)
     assert batch.status_code == 200
 
 
-def test_api_webhook_400(client: TestClient):
+def test_api_webhook_fails_closed_without_secret(client: TestClient):
     r = client.post("/api/v1/ingest/webhooks/razorpay", json={})
-    assert r.status_code == 400
+    assert r.status_code == 503
+    assert r.json()["detail"] == "razorpay_webhook_secret_required"
 
 
-def test_api_mvp_mode_requires_webhook_secret(client: TestClient, monkeypatch):
+def test_api_webhook_requires_secret(client: TestClient, monkeypatch):
     from apps.api import main as api_main
 
-    monkeypatch.setattr(api_main.settings, "rebound_execution_mode", "mvp_mode")
     monkeypatch.setattr(api_main.settings, "razorpay_webhook_secret", "")
 
     response = client.post(
@@ -946,7 +990,7 @@ def test_api_mvp_mode_requires_webhook_secret(client: TestClient, monkeypatch):
     )
 
     assert response.status_code == 503
-    assert response.json()["detail"] == "razorpay_mvp_webhook_secret_required"
+    assert response.json()["detail"] == "razorpay_webhook_secret_required"
 
 
 def test_api_webhook_signature_when_secret_configured(client: TestClient, monkeypatch):

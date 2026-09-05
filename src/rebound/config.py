@@ -19,6 +19,11 @@ class Settings(BaseSettings):
     rebound_enable_llm_proposer: bool = False
     openai_api_key: str = ""
     openai_model: str = "gpt-4o-mini"
+    # Operator endpoints stay unavailable until a local access token is set.
+    # Razorpay webhooks use their own signed-request verification.
+    rebound_api_token: str = ""
+    # Used only to pseudonymise inbound customer references before persistence.
+    rebound_pii_hash_salt: str = ""
     api_url: str = "http://localhost:8000"
     app_url: str = "http://localhost:5173"
     policy_version: str = "mvp-v1"

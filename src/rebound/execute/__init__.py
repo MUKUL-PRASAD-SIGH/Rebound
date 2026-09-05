@@ -77,8 +77,7 @@ def _result_from_payment_link(
     reconciled: bool = False,
 ) -> ExecuteResult:
     link_id = link.get("id")
-    short_url = link.get("short_url")
-    if not isinstance(link_id, str) or not isinstance(short_url, str):
+    if not isinstance(link_id, str):
         raise PaymentLinkExecutionError("razorpay_payment_link_response_invalid")
     return ExecuteResult(
         mode=ExecutionMode.MVP_MODE.value,
@@ -86,7 +85,6 @@ def _result_from_payment_link(
         response={
             "ok": True,
             "payment_link_id": link_id,
-            "url": short_url,
             "status": link.get("status"),
             "reconciled_from_reference_lookup": reconciled,
         },

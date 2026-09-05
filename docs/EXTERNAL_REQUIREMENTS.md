@@ -41,6 +41,8 @@ Single checklist of everything needed to run Rebound end-to-end. **Nothing here 
 | `RAZORPAY_KEY_SECRET` | Payment Link Basic Auth secret | **No** — both key and secret are required for an MVP-mode call |
 | `RAZORPAY_WEBHOOK_SECRET` | Webhook signature verification | **No** — required only for signed public webhook testing; validates `X-Razorpay-Signature` against the raw request body |
 | `REBOUND_EXECUTION_MODE` | `dry_run` (default) \| `mvp_mode` | `mvp_mode` plus both Razorpay Test Mode keys creates a real Razorpay Test Mode Payment Link; a key ID not starting `rzp_test_` is rejected before any HTTP call |
+| `REBOUND_API_TOKEN` | Private operator API access | **Yes** — all non-webhook API routes return `503` until a local token is configured, then require `X-Rebound-Token` |
+| `REBOUND_PII_HASH_SALT` | Customer-reference pseudonymisation | **Recommended** — set a distinct random secret to make local customer pseudonyms non-reversible |
 
 **Execution safety:** the default remains offline `dry_run`. In explicitly configured `mvp_mode`, Rebound creates one standard Payment Link per decision with notifications/reminders disabled, a deterministic 40-character-or-less `reference_id`, and reconciliation by that reference after an ambiguous request failure. It records the link as **pending** and accepts recovery only after a signed `payment_link.paid` webhook. Other recovery outcomes remain labelled `simulated`.
 
