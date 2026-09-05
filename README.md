@@ -156,6 +156,7 @@ Details: [`architecture/`](architecture/README.md) · freeze: [`architecture/mvp
 - LLM is **never** unrestricted authority over money actions  
 - Model **proposes** → policy engine **gates** → allowlisted execute → **audit**  
 - Test-mode outcomes are labeled honestly — never pretend simulated ₹ are real
+- Optional OpenAI proposals are schema-constrained, exclude customer identifiers, and fall back to the local EV proposer on any failure
 
 ---
 
@@ -189,6 +190,20 @@ npm run dev
 ```
 
 Open http://127.0.0.1:5173 — Vite proxies `/api` to the backend. Demo steps: [`docs/submission/demo-runbook.md`](docs/submission/demo-runbook.md).
+
+---
+
+## Demo: what to show
+
+For a strong 2–3 minute walkthrough, use this order:
+
+1. **Overview** — frame the problem: recovery needs a decision controller, not more blind retries.
+2. **Seed batch** — load the repeatable 60-case synthetic portfolio.
+3. **Evaluation** — run it *before* batch execution and show Rebound beside Baseline A and Baseline B. Call the metric **simulated net-value delta**, never live revenue.
+4. **One case** — preview the proposed action, expected value, confidence, and deterministic gate; then decide and execute it safely.
+5. **Audit trail** — show the cross-case evidence that makes every decision traceable.
+
+The recording-ready click path and spoken narration are in [`docs/submission/video-script.md`](docs/submission/video-script.md). Use the fuller local setup and rehearsal instructions in [`docs/submission/demo-runbook.md`](docs/submission/demo-runbook.md).
 
 ---
 

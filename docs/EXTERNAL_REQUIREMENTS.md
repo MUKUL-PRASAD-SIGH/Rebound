@@ -52,10 +52,13 @@ Copy [`.env.example`](../.env.example) → `.env` only if you want to experiment
 
 | Env var | Used for | Required? |
 | --- | --- | --- |
-| `REBOUND_ENABLE_LLM_PROPOSER=true` | Flag on proposer path | **No** — default EV model |
-| `OPENAI_API_KEY` / `ANTHROPIC_*` / `GOOGLE_*` / `GROQ_*` | Listed in `.env.example` for future use | **Not wired** — flag currently passthroughs EV pick with a tagged rationale |
+| `REBOUND_ENABLE_LLM_PROPOSER=true` | Enables the OpenAI structured-output proposer | **No** — the default EV model remains the offline proposer |
+| `OPENAI_API_KEY` | Server-side key for the optional OpenAI request | Required only when the flag is `true`; never expose it in the web app or commit it |
+| `OPENAI_MODEL` | Optional OpenAI model override | Defaults to `gpt-4o-mini` |
 
-Product thesis does **not** depend on an LLM.
+When enabled, Rebound sends only non-identifying recovery signals (amount, currency, failure class, attempt count, tenure, payment method, and deterministic candidate metrics) to the OpenAI Responses API. The model can choose only from precomputed, non-exhausted action candidates and returns schema-constrained JSON. Rebound recomputes probability and expected value deterministically, then sends the proposal through the same mandatory policy gate. Missing credentials, failed requests, and invalid model output fall back to the offline EV proposer. Requests use `store=false`.
+
+Product thesis does **not** depend on an LLM; the default decide → gate → execute → eval loop remains offline.
 
 ---
 
