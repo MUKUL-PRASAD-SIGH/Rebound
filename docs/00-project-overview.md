@@ -18,7 +18,7 @@ An expected-value decision layer that detects revenue at risk, chooses bounded r
 
 - **Who hurts?** Subscription / D2C merchants losing revenue to failed charges, stale methods, and weak recovery sequencing.
 - **What is broken?** Retries and update links exist, but choosing *whether / which / when* to intervene (including stop) under cost and policy constraints is still under-specified — and easy to confuse with “smarter retries.”
-- **Why Razorpay?** Rails + webhooks + test-mode + the real product baseline (Intelligent Retry, Agent Studio recovery) all live here.
+- **Why Razorpay?** Rails + webhooks + MVP mode (Razorpay Test Mode) + the real product baseline (Intelligent Retry, Agent Studio recovery) all live here.
 
 ## Solution (hypothesis)
 
@@ -26,7 +26,7 @@ Rebound: detect → score recoverability & intervention EV → propose structure
 
 ## Target user
 
-Merchant ops / revenue teams (demo persona: a test-mode merchant with a batch of at-risk subscriptions/checkouts).
+Merchant ops / revenue teams (demo persona: a MVP mode (Razorpay Test Mode) merchant with a batch of at-risk subscriptions/checkouts).
 
 ## Scope for the buildathon
 
@@ -48,7 +48,7 @@ See [`SCHEDULE.md`](../SCHEDULE.md) and frozen [`architecture/mvp-scope.md`](../
 | Criterion | How we'll know |
 | --- | --- |
 | Demo works end-to-end | Ugly MVP by Aug 26; build complete by Sep 2, then full-test on Sep 3 |
-| Clear Razorpay relevance | Test-mode Payment Link and/or documented dry-run |
+| Clear Razorpay relevance | MVP mode (Razorpay Test Mode) Payment Link and/or documented dry-run |
 | Measurable insight | `lift_value` on held-out/seed batch |
 | Safety | Policy gate + audit; no unrestricted LLM money actions |
 | Proof trail | Build log + commits + evidence |
@@ -69,7 +69,7 @@ See [`SCHEDULE.md`](../SCHEDULE.md) and frozen [`architecture/mvp-scope.md`](../
 | Policy | Pure Python deterministic engine |
 | UI | React + TypeScript |
 | Data | SQLite + SQLAlchemy |
-| Payments | Razorpay test-mode (Payment Links primary) |
+| Payments | Razorpay Test Mode (Payment Links primary) |
 | Agent frameworks | **None** for MVP |
 
 Architecture: [`architecture/README.md`](../architecture/README.md)
@@ -84,6 +84,6 @@ Architecture: [`architecture/README.md`](../architecture/README.md)
 | MVP scope | [`architecture/mvp-scope.md`](../architecture/mvp-scope.md) |
 | Schedule | [`SCHEDULE.md`](../SCHEDULE.md) |
 | Local run + demo flow | [`README.md`](../README.md#run-locally) |
-| Razorpay test-mode check | [`README.md`](../README.md#test-razorpay-safely-no-production-mode) |
+| Razorpay MVP-mode check | [`README.md`](../README.md#mvp-mode-functional-testing-without-production-money) |
 | Demo video | TBD |
 | Public repo | https://github.com/MUKUL-PRASAD-SIGH/razorpay-buildathon-2026 |

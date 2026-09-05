@@ -20,7 +20,7 @@ Must clear all of:
 - [ ] Business value a merchant would pay for or measure
 - [ ] AI does something non-cosmetic
 - [ ] Not a generic chatbot
-- [ ] Demoable with test-mode / synthetic data
+- [ ] Demoable with MVP mode (Razorpay Test Mode) / synthetic data
 - [ ] Measurable outcomes
 - [ ] Plausible product path
 - [ ] Stronger than my best defined-track candidate

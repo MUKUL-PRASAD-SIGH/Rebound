@@ -64,7 +64,7 @@ Merchant (demo singleton)
 | --- | --- |
 | id, case_id, decision_id | |
 | action | |
-| mode | `live_test` \| `dry_run` \| `simulated` |
+| mode | `mvp_mode` \| `dry_run` \| `simulated` |
 | request_json / response_json | |
 | razorpay_payment_link_id | null |
 | idempotency_key | unique |
@@ -76,8 +76,17 @@ Merchant (demo singleton)
 | id, case_id, action_attempt_id null | |
 | result | `recovered` \| `failed` \| `pending` \| `stopped` |
 | value_paise | |
-| label | `test_mode` \| `simulated` \| `baseline` |
+| label | `mvp_mode` \| `simulated` \| `baseline` |
 | observed_at | |
+
+### `razorpay_webhook_events`
+| Column | Notes |
+| --- | --- |
+| `external_event_id` | Razorpay's unique `X-Razorpay-Event-Id`; unique for delivery idempotency |
+| `event_type` | e.g. `payment_link.paid` |
+| `case_id` | Original Rebound case reconciled by the event |
+| `payload_json` | Raw parsed webhook record for audit/debug |
+| `received_at` | UTC receipt time |
 
 ### `audit_events`
 Append-only. `id, case_id, kind, payload_json, created_at`  
@@ -88,9 +97,10 @@ Store batch id, policy name (`baseline_a` \| `rebound`), per-case action + outco
 
 ## Idempotency rules
 
-1. Webhook/`external_event_id` → upsert case, never double-open  
-2. `action_attempts.idempotency_key` = `case_id + action + decision_id`  
-3. Re-running eval creates a **new** `eval_run`, does not mutate historical audits  
+1. `X-Razorpay-Event-Id` → `razorpay_webhook_events`, never process the same delivery twice
+2. Failure webhooks/`external_event_id` → upsert case, never double-open
+3. `action_attempts.idempotency_key` = `case_id + action + decision_id`
+4. Re-running eval creates a **new** `eval_run`, does not mutate historical audits
 
 ## Feature vector (v1)
 

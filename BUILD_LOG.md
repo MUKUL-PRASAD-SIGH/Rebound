@@ -51,7 +51,7 @@ Understand all five buildathon tracks in the context of what Razorpay already bu
 
 ### Decisions
 - Leading provisional thesis: Track 03 expected-value recovery decision layer
-- Not locked until test-mode path + differentiation sentence are verified
+- Not locked until MVP mode (Razorpay Test Mode) path + differentiation sentence are verified
 - Track 01 conditional; Track 04 backup; Track 02/05 parked
 
 ### Evidence
@@ -123,7 +123,7 @@ Turn Rebound into a buildable system design without writing product features yet
 
 ### Decisions
 - Headline metric: `lift_value` vs Baseline A
-- Payment Link = primary test-mode side effect; outreach simulated
+- Payment Link = primary MVP mode (Razorpay Test Mode) side effect; outreach simulated
 - Rules/EV default proposer; LLM optional behind flag
 - Aug 23 coding starts from documented package layout
 
@@ -243,7 +243,7 @@ Integrate the end-to-end MVP with honest baseline comparison and a visible `lift
 
 ### Decisions
 - Keep the headline metric as `lift_value = net(Rebound) - net(Baseline A)`
-- Simulated outcomes remain explicitly labeled; never represent test-mode results as real revenue
+- Simulated outcomes remain explicitly labeled; never represent MVP mode (Razorpay Test Mode) results as real revenue
 - The MVP closes with decide → execute → eval loop, not with another full research detour
 
 ### Evidence

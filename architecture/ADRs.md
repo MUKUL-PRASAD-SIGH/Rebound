@@ -28,7 +28,7 @@
 
 - **Date:** 2026-08-22  
 - **Status:** Accepted  
-- **Decision:** Test-mode Payment Links are the main real Razorpay side effect in MVP.  
+- **Decision:** MVP mode (Razorpay Test Mode) Payment Links are the main real Razorpay side effect in MVP.
 - **Alternatives:** Direct subscription charge only; invoices only.  
 - **Why:** Clear demo artifact (URL/id); fits “bounded recovery workflow”; works when full subscription retry APIs are awkward in sandbox.
 

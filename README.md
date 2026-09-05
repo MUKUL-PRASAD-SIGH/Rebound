@@ -26,7 +26,7 @@
 | Expected-value engine | Scores recoverability, intervention cost, and the expected value of each action. |
 | Structured intelligence | Uses an optional schema-constrained LLM proposer with a deterministic local EV fallback. |
 | Deterministic policy gate | Applies action allowlists, confidence floors, retry caps, stopping rules, and escalation rules. |
-| Safe execution | Runs dry-run and simulated flows by default, with guarded Razorpay test-mode Payment Links available when configured. |
+| Safe execution | Runs dry-run and simulated flows by default, with a guarded **MVP mode** Payment Link flow backed by Razorpay Test Mode. |
 | Evaluation lab | Compares Rebound with Baseline A and Baseline B on the same synthetic portfolio. |
 | Audit trail | Records the score, proposal, policy decision, execution, and outcome for every case. |
 
@@ -51,7 +51,7 @@ The full problem selection, competitive analysis, baseline rationale, and source
 | 2 | Estimate recoverability and intervention expected value |
 | 3 | Propose a structured action: retry signal, Payment Link, update-method outreach, stop, or escalate |
 | 4 | Enforce **deterministic guardrails**: allowlists, caps, confidence floors, and stopping rules |
-| 5 | Execute only allowlisted Razorpay-compatible workflows in dry-run, simulated, or explicit test mode |
+| 5 | Execute only allowlisted Razorpay-compatible workflows in dry-run, simulated, or explicit MVP mode |
 | 6 | Report **incremental simulated net-value delta versus Baseline A** with a full audit trail |
 
 ## How this could help Razorpay
@@ -74,7 +74,7 @@ That is the product direction—not a claim that this MVP has already achieved p
 | Policy | Mandatory deterministic Python engine |
 | UI | React + TypeScript |
 | Data | SQLite + SQLAlchemy |
-| Payments | Razorpay standard Payment Links in test mode |
+| Payments | Razorpay standard Payment Links in MVP mode (Razorpay Test Mode) |
 | Frameworks | No agent framework in the decision-critical path |
 
 Architecture: [system design](architecture/README.md) · [MVP scope](architecture/mvp-scope.md) · [API surface](architecture/api-surface.md)
@@ -88,14 +88,14 @@ This table is the honest status of the locked build path.
 | Locked goal | Status | Evidence / boundary |
 | --- | --- | --- |
 | Failed subscription / recurring-style recovery as the primary domain | **Met for the synthetic MVP** | The seeded portfolio models failed-payment recovery. Direct subscription or invoice reads are a next integration, not a shipped claim. |
-| Razorpay test-mode surfaces | **Partially met** | The executor can create a standard test-mode Payment Link; the webhook endpoint verifies raw-body signatures and accepts payment/subscription-shaped payloads. A real account run and dashboard/API read integration still need to be demonstrated. |
+| Razorpay MVP-mode surfaces | **Functionally complete; account proof pending** | The executor creates a standard Razorpay Test Mode Payment Link, records it as pending, verifies raw-body webhook signatures, and reconciles a signed `payment_link.paid` event. A real account run and dashboard/API read integration still need to be demonstrated. |
 | Outreach and some failure labels simulated—not faked as delivered | **Met** | Outreach is an explicitly labelled audit-log simulation. |
-| Never present test-mode or simulated value as real money | **Met** | UI/docs use `simulated_net_value_delta`; a created link is not counted as a recovered payment. |
+| Never present MVP-mode or simulated value as real money | **Met** | UI/docs use `simulated_net_value_delta`; creating a link does not count as recovery. Only the signed MVP mode (Razorpay Test Mode) paid webhook can close its case. |
 | Fixed policy baseline | **Met** | Evaluation runs Baseline A, Baseline B, and Rebound on the same seeded portfolio. |
 | Incremental recovered value on a held-out batch | **Partially met** | The product calculates paired **synthetic** net-value delta. It is not yet an independent held-out merchant dataset or production ROI. |
 | Model proposes → policy gates → allowlisted execution → audit | **Met** | The policy engine remains mandatory; the optional LLM can never execute an action directly. |
 
-The current backend regression suite passes; the release record also contains a passing production frontend-build check. The remaining high-value proof is one controlled Razorpay **test-mode** Payment Link creation/payment and a signed webhook delivery to a public test endpoint. Do not present that proof as real merchant recovery.
+The current backend regression suite passes; the release record also contains a passing production frontend-build check. The remaining high-value proof is one controlled Razorpay **MVP-mode** Payment Link creation/payment and a signed webhook delivery to a public test endpoint. Do not present that proof as real merchant recovery.
 
 ## Safety and secrets
 
@@ -103,7 +103,7 @@ The current backend regression suite passes; the release record also contains a 
 - Start from [`.env.example`](.env.example); the default mode is offline `dry_run`.
 - LLM proposals are schema-constrained, exclude customer identifiers, and fall back to the local EV proposer on any failure.
 - Model **proposes** → policy engine **gates** → allowlisted executor runs → audit is recorded.
-- Test-mode and synthetic outcomes are always labelled honestly; simulated ₹ are not real revenue.
+- MVP-mode and synthetic outcomes are always labelled honestly; simulated ₹ are not real revenue.
 
 ---
 
@@ -153,9 +153,31 @@ make eval
 - Eval: `python src/scripts/run_eval.py`
 - Tests: `cd src && python -m pytest tests -q`
 
-## Test Razorpay safely (no production mode)
+## MVP mode: functional testing without production money
 
-For the buildathon, stay in **Razorpay Test Mode**. You do **not** need live keys, a production account, or real-money charges. Razorpay explicitly supports test Payment Links and test success/failure flows; test businesses are limited to 30 Payment Links. See Razorpay’s [Payment Link test guide](https://razorpay.com/docs/payments/payment-links/create/?preferred-country=IN) and [Standard Payment Link API](https://razorpay.com/docs/api/payments/payment-links/create-standard/?preferred-country=IN).
+**MVP mode** is Rebound’s product environment. Under the hood it uses **Razorpay Test Mode**—Razorpay’s official sandbox name. Rebound has no `production` setting and rejects `rzp_live_` keys before any external call.
+
+| Concern | MVP mode | Production |
+| --- | --- | --- |
+| Rebound setting | `REBOUND_EXECUTION_MODE=mvp_mode` | Deliberately unsupported |
+| Razorpay credentials | `rzp_test_...` Razorpay Test Mode keys | Live keys are rejected |
+| Payment Link | Real Razorpay Test Mode link; no real money | Would require merchant approval, live-key controls, monitoring, and compliance work |
+| Recovery outcome | Pending until a signed Razorpay Test Mode `payment_link.paid` webhook; synthetic flows remain labelled | Observed merchant outcome with consented data |
+| Why | Judges can test the full integration safely and repeatably | Unsafe and dishonest for an unauthorised buildathon demo |
+
+For the buildathon, use MVP mode only. Razorpay supports Payment Links and sandbox success/failure flows in Test Mode; test businesses are limited to 30 Payment Links. See Razorpay’s [Payment Link test guide](https://razorpay.com/docs/payments/payment-links/create/?preferred-country=IN) and [Standard Payment Link API](https://razorpay.com/docs/api/payments/payment-links/create-standard/?preferred-country=IN).
+
+### What a judge needs
+
+| Item | Required? | Purpose |
+| --- | --- | --- |
+| Python and Node.js | Yes | Run the API and web app |
+| No key | Yes, for dry-run demo | Seed, evaluate, decide, simulate, and inspect audit trails offline |
+| `RAZORPAY_KEY_ID` + `RAZORPAY_KEY_SECRET` | Only for an MVP-mode Payment Link | Must be the judge’s own `rzp_test_...` Razorpay Test Mode credentials |
+| `RAZORPAY_WEBHOOK_SECRET` + public HTTPS URL | Only for an end-to-end paid-webhook test | Verify Razorpay’s signed delivery; `localhost` cannot receive it |
+| `OPENAI_API_KEY` | Optional | Enables the bounded structured LLM proposer; the deterministic proposer needs no key |
+
+No judge should share a secret with this repository or put one in a recording.
 
 Create a local `.env` (never commit it):
 
@@ -164,7 +186,7 @@ RAZORPAY_KEY_ID=rzp_test_your_key_id
 RAZORPAY_KEY_SECRET=your_test_key_secret
 RAZORPAY_WEBHOOK_SECRET=your_separate_webhook_secret
 
-REBOUND_EXECUTION_MODE=test_mode
+REBOUND_EXECUTION_MODE=mvp_mode
 REBOUND_ENABLE_LLM_PROPOSER=false
 DATABASE_URL=sqlite:///./rebound.db
 POLICY_VERSION=mvp-v1
@@ -172,9 +194,21 @@ APP_URL=http://localhost:5173
 API_URL=http://localhost:8000
 ```
 
-Then seed a fresh batch, open a case whose gated proposal is `payment_link`, and execute that one case. Rebound will create a standard test Payment Link with notifications and reminders disabled; it will return the test link ID and URL. Avoid bulk test-mode execution.
+Then seed a fresh batch, open a case whose gated proposal is `payment_link`, and execute that one case. Rebound will create a standard Razorpay Test Mode Payment Link with notifications and reminders disabled, return the link ID and URL, and leave the case **pending**. Avoid bulk MVP-mode execution.
 
-For a genuine webhook check, configure `POST /api/v1/ingest/webhooks/razorpay` on a public HTTPS staging URL or a supported local tunnel, set the same **webhook secret** in Razorpay and `.env`, and subscribe to the Payment Link event you are testing. Razorpay cannot deliver webhooks to `localhost`; it requires a public URL and signs the raw body with `X-Razorpay-Signature`. Follow the [official validation and test guide](https://razorpay.com/docs/webhooks/validate-test/?preferred-country=IN).
+For a genuine webhook check, configure `POST /api/v1/ingest/webhooks/razorpay` on a public HTTPS staging URL or a supported local tunnel, set the same **webhook secret** in Razorpay and `.env`, and subscribe to `payment_link.paid`. Razorpay cannot deliver webhooks to `localhost`; it requires a public URL and signs the raw body with `X-Razorpay-Signature`. Rebound reconciles that event to the original link attempt and marks the case recovered. Follow the [official validation and test guide](https://razorpay.com/docs/webhooks/validate-test/?preferred-country=IN).
+
+If a judge does not want to expose a webhook endpoint, the case screen’s **Refresh Razorpay Test Mode status** control calls the authenticated Payment Link read API and reconciles its `paid`, `expired`, or `cancelled` state. This is a safe fallback for an MVP-mode demo, although webhooks remain the normal event-driven integration.
+
+MVP mode also exposes these **read-only** endpoints for a judge’s own Test Mode objects:
+
+```text
+GET /api/v1/razorpay/subscriptions/{sub_id}
+GET /api/v1/razorpay/subscriptions/{sub_id}/invoices
+POST /api/v1/cases/{case_id}/refresh-payment-link
+```
+
+They require MVP mode and `rzp_test_...` credentials; they reject live keys and never create, cancel, capture, or modify a subscription or invoice.
 
 ## Demo flow
 

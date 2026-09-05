@@ -14,7 +14,7 @@ from rebound.execute import execute_action, result_to_json
 from rebound.features import extract_features
 from rebound.policy import gate
 from rebound.propose import propose_for_case
-from rebound.schemas.enums import Action, AuditKind, CaseStatus, OutcomeLabel, OutcomeResult
+from rebound.schemas.enums import Action, AuditKind, CaseStatus, ExecutionMode, OutcomeLabel, OutcomeResult
 from rebound.scoring import score_actions
 
 MAX_ATTEMPTS_BEFORE_FORCE_STOP = 4
@@ -154,16 +154,27 @@ def _record_outcome(
     attempt: ActionAttempt,
     action: Action,
     p_recover: float,
+    execution_mode: str,
 ) -> str:
-    if action == Action.STOP:
+    # A real Razorpay Test Mode Payment Link must wait for its authoritative
+    # signed webhook. Never simulate payment success after merely creating a link.
+    if execution_mode == ExecutionMode.MVP_MODE.value and action == Action.PAYMENT_LINK:
+        result = OutcomeResult.PENDING.value
+        value = 0
+        label = OutcomeLabel.MVP_MODE.value
+        case.status = CaseStatus.ACTING.value
+    elif action == Action.STOP:
         result = OutcomeResult.STOPPED.value
         value = 0
+        label = OutcomeLabel.SIMULATED.value
         case.status = CaseStatus.STOPPED.value
     elif action == Action.ESCALATE:
         result = OutcomeResult.PENDING.value
         value = 0
+        label = OutcomeLabel.SIMULATED.value
         case.status = CaseStatus.ESCALATED.value
     else:
+        label = OutcomeLabel.SIMULATED.value
         u = _deterministic_uniform(case.id, attempt.id)
         if u < max(0.0, min(0.95, p_recover)):
             result = OutcomeResult.RECOVERED.value
@@ -185,7 +196,7 @@ def _record_outcome(
         action_attempt_id=attempt.id,
         result=result,
         value_paise=value,
-        label=OutcomeLabel.SIMULATED.value,
+        label=label,
     )
     db.add(outcome)
     db.flush()
@@ -196,7 +207,7 @@ def _record_outcome(
         {
             "result": result,
             "value_paise": value,
-            "label": OutcomeLabel.SIMULATED.value,
+            "label": label,
             "attempt_id": attempt.id,
             "case_status": case.status,
         },
@@ -250,5 +261,5 @@ def _execute(
         },
     )
 
-    outcome = _record_outcome(db, case, attempt, action, p_recover)
+    outcome = _record_outcome(db, case, attempt, action, p_recover, exec_result.mode)
     return attempt, outcome

@@ -36,7 +36,7 @@ class GateResult(str, Enum):
 
 class ExecutionMode(str, Enum):
     DRY_RUN = "dry_run"
-    LIVE_TEST = "live_test"
+    MVP_MODE = "mvp_mode"
     SIMULATED = "simulated"
 
 
@@ -48,7 +48,7 @@ class OutcomeResult(str, Enum):
 
 
 class OutcomeLabel(str, Enum):
-    TEST_MODE = "test_mode"
+    MVP_MODE = "mvp_mode"
     SIMULATED = "simulated"
     BASELINE = "baseline"
 

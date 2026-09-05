@@ -76,7 +76,7 @@
 
 - [ ] Primary NPCI documentation for UAP / Reserve Pay regulatory framing
 - [ ] Primary specs for ACP, AP2, x402 (buildathon mentions)
-- [ ] Exact Razorpay test-mode coverage checklist with a sandbox key
+- [ ] Exact Razorpay Test Mode coverage checklist with a sandbox key
 - [ ] Whether Agent Studio agents are available to student accounts or only marketing/early access
 - [ ] Third-party audits of Vulcan metrics (none found in first pass; treat metrics as company-reported)
 

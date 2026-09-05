@@ -8,7 +8,7 @@ From the [official page](https://razorpay.com/buildathon/):
 
 Build an agent that either:
 
-1. grows revenue for a merchant on Razorpay **test-mode** APIs, **or**
+1. grows revenue for a merchant on Razorpay **MVP mode (Razorpay Test Mode)** APIs, **or**
 2. makes a merchant **transactable by an AI buyer** end to end.
 
 Example directions they list: conversational in-app checkout, agent-readable catalog, upsell/cross-sell agent, campaign orchestrator.
@@ -58,7 +58,7 @@ Hypotheses worth testing (not claims):
    Make a merchant's products, constraints, inventory, and policies machine-consumable so an AI buyer can transact without brittle scraping. Razorpay is pushing agent-led checkout; many merchants are not agent-ready.
 
 2. **Bounded merchant-side growth agent**  
-   Upsell / cross-sell / campaign orchestration that proposes actions, runs through allowlists + spend/discount caps, executes via test-mode payment links / offers, and measures incremental conversion — not "LLM spams coupons."
+   Upsell / cross-sell / campaign orchestration that proposes actions, runs through allowlists + spend/discount caps, executes via MVP mode (Razorpay Test Mode) payment links / offers, and measures incremental conversion — not "LLM spams coupons."
 
 3. **Protocol adapter layer**  
    Track mentions ACP / AP2 / x402 / UAP. Bridging a merchant catalog into an agent-commerce protocol *could* be differentiation — **but** I have not yet verified which of these are stable enough to demo honestly.  
@@ -77,11 +77,11 @@ Hypotheses worth testing (not claims):
 ## Fit with my skills
 
 Strong: agents, RAG over catalogs, APIs, FastAPI + React demo, guardrail architecture.  
-Weak relative to big-brand demos: access to live Reserve Pay / production agentic surfaces (likely simulated / test-mode / mocked consent).
+Weak relative to big-brand demos: access to live Reserve Pay / production agentic surfaces (likely simulated / MVP mode (Razorpay Test Mode) / mocked consent).
 
-## ₹0 / test-mode notes
+## ₹0 / MVP mode (Razorpay Test Mode) notes
 
-- Test-mode Orders / Payments / Payment Links are the realistic path.
+- MVP mode (Razorpay Test Mode) Orders / Payments / Payment Links are the realistic path.
 - Reserve Pay / live Claude shopping is **not** something I should pretend to have in production.
 - Clearly label: simulated AI-buyer flow vs real Razorpay test transactions.
 

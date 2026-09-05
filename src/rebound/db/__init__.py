@@ -7,6 +7,7 @@ from rebound.db.models import (
     EvalRun,
     Outcome,
     Proposal,
+    RazorpayWebhookEvent,
 )
 from rebound.db.session import SessionLocal, get_db, init_db
 
@@ -19,6 +20,7 @@ __all__ = [
     "EvalRun",
     "Outcome",
     "Proposal",
+    "RazorpayWebhookEvent",
     "SessionLocal",
     "get_db",
     "init_db",

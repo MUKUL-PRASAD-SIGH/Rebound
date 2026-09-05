@@ -15,8 +15,8 @@
 | Technical novelty (student-feasible) | 3 | 3 | **4** | 3 | ? |
 | AI depth | 4 | **5** | **5** | 3 | ? |
 | Agentic depth | **5** | 3 | **5** | 3 | ? |
-| Data availability (honest) | 3 | **2** | **4** (synthetic + test-mode) | **5** (synthetic) | ? |
-| API / test-mode feasibility | 3 | 2 | **4** | 4 | ? |
+| Data availability (honest) | 3 | **2** | **4** (synthetic + MVP mode (Razorpay Test Mode)) | **5** (synthetic) | ? |
+| API / MVP mode (Razorpay Test Mode) feasibility | 3 | 2 | **4** | 4 | ? |
 | ₹0 feasibility | 3 | 3 | **4** | **5** | ? |
 | Evaluation clarity | 3 | **5** | **4** | **5** | 2 |
 | Measurable business impact story | 4 | 4 | **5** | 3 | ? |
@@ -67,6 +67,6 @@ Question: *If presented to a Razorpay engineer, does the architecture still make
 
 ## What would change this ranking
 
-- If test-mode cannot support the recovery loop cleanly → raise Track 04 / narrowed Track 01
+- If MVP mode (Razorpay Test Mode) cannot support the recovery loop cleanly → raise Track 04 / narrowed Track 01
 - If I find a defensible risk dataset + niche → reconsider Track 02
 - If Agent Studio already covers my exact Track 03 thesis in public docs → narrow further or switch

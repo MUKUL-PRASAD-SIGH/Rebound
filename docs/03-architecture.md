@@ -6,7 +6,7 @@
 ## High-level
 
 ```text
-Razorpay test-mode / synthetic
+Razorpay Test Mode / synthetic
         ↓ ingest (idempotent)
 Case + features
         ↓ score EV
@@ -38,7 +38,7 @@ Ops UI (React)
 2. Build features → score actions  
 3. Propose allowlisted action  
 4. Gate → Decision  
-5. Execute (mode: dry_run / test_mode / simulated)  
+5. Execute (mode: dry_run / mvp_mode / simulated)
 6. Record Outcome + AuditEvent  
 7. Batch EvalRun computes **lift_value**
 
@@ -53,7 +53,7 @@ See [`architecture/ADRs.md`](../architecture/ADRs.md) (SQLite, mandatory policy,
 | Thesis collapses to “AI retry” | Lift vs baseline; `stop` first-class; diff doc |
 | Duplicate side effects | Idempotency keys on events + attempts |
 | LLM unsafe actions | No direct tool access; schema + policy |
-| Dishonest metrics | `test_mode` vs `simulated` labels |
+| Dishonest metrics | `mvp_mode` vs `simulated` labels |
 | Slip schedule | MVP scope freeze file |
 
 ## Non-goals (architecture)

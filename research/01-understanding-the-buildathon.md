@@ -19,7 +19,7 @@ That changes how I evaluate ideas. A flashy demo that collapses under one failur
 
 | Track | Official ask (compressed) | The bar that matters |
 | --- | --- | --- |
-| **01 — AI Growth & Agentic Commerce** | Grow merchant revenue **or** make a merchant transactable by an AI buyer end-to-end on test-mode APIs | Every money action explainable, bounded, gated; audit trail; one failure handled gracefully |
+| **01 — AI Growth & Agentic Commerce** | Grow merchant revenue **or** make a merchant transactable by an AI buyer end-to-end on MVP mode (Razorpay Test Mode) APIs | Every money action explainable, bounded, gated; audit trail; one failure handled gracefully |
 | **02 — AI Risk Manager** | Detector / verifier / auto-responder for one class of loss; measured precision & recall on held-out set | Honest metrics incl. false-positive cost; **defense-only** |
 | **03 — AI Revenue Recovery** | Detect revenue at risk → choose intervention → execute bounded recovery | Measured money recovered across a batch; escalation; stopping rules; audit trail |
 | **04 — AI Finance Controller** | Close one finance-ops loop on 50+ synthetic records; report match rate + unresolved exceptions | Throughput + accuracy + honest exception list |
@@ -43,7 +43,7 @@ My first-pass instinct ranking (before deep product research):
 
 What I think a Razorpay engineer would care about more than buzzwords:
 
-- Did you integrate real Razorpay surfaces (even test-mode)?
+- Did you integrate real Razorpay surfaces (even MVP mode (Razorpay Test Mode))?
 - Did you measure something non-vanity?
 - Did you handle failure, duplicates, timeouts, malformed model output?
 - Did you put guardrails between the model and money?
@@ -53,7 +53,7 @@ What I think a Razorpay engineer would care about more than buzzwords:
 
 - [ ] Exact submission deadline / format beyond the public page (TODO: confirm on portal)
 - [ ] Whether Agent Studio / Intelligent Retry / Vulcan are in-scope to *compose with* or off-limits to *recreate* (my working assumption: compose above; do not recreate)
-- [ ] Test-mode coverage for subscriptions, webhooks, payment links, invoices (TODO: verify against docs with keys)
+- [ ] MVP mode (Razorpay Test Mode) coverage for subscriptions, webhooks, payment links, invoices (TODO: verify against docs with keys)
 
 ## Next
 

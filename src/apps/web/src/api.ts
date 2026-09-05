@@ -52,6 +52,15 @@ export type ExecuteResult = {
   action: string;
   mode: string;
   response: Record<string, unknown>;
+  razorpay_payment_link_id?: string | null;
+};
+
+export type PaymentLinkRefreshResult = {
+  case_id: string;
+  payment_link_id: string;
+  payment_link_status?: string | null;
+  reconciled: boolean;
+  case_status: string;
 };
 
 async function jsonOrThrow<T>(res: Response): Promise<T> {
@@ -93,6 +102,10 @@ export async function decideCase(id: string, autoExecute = false): Promise<Decid
 
 export async function executeCase(id: string): Promise<ExecuteResult> {
   return jsonOrThrow(await fetch(`${API}/api/v1/cases/${id}/execute`, { method: "POST" }));
+}
+
+export async function refreshPaymentLink(id: string): Promise<PaymentLinkRefreshResult> {
+  return jsonOrThrow(await fetch(`${API}/api/v1/cases/${id}/refresh-payment-link`, { method: "POST" }));
 }
 
 export async function batchDecide(autoExecute = true): Promise<{ count: number }> {

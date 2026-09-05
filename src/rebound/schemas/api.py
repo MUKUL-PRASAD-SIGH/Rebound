@@ -105,4 +105,5 @@ class WebhookIngestResponse(BaseModel):
     case_id: str
     case_key: str
     created: bool
-
+    reconciled: bool = False
+    event_type: str = "unknown"

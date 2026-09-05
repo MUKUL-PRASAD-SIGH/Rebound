@@ -145,7 +145,7 @@ deterministic policy / guardrail engine
 approval gate (if needed)
         ↓
 Razorpay-compatible execution
-  (test-mode charge / payment link / invoice / noted outreach)
+  (MVP mode (Razorpay Test Mode) charge / payment link / invoice / noted outreach)
         ↓
 outcome + incremental metric vs baseline
         ↓
@@ -183,7 +183,7 @@ A student project only makes sense if it is clearly a **measurable decision laye
 | Voice dunning clone | Reject unless radically different metric/policy story — Agent Studio overlap |
 | Checkout abandonment WhatsApp blaster | Weak — easy spam; hard to prove incremental lift |
 | **EV-aware recovery controller** with baselines, stopping rules, audit | Keep — aligns with track bar; harder; more engineer-shaped |
-| B2B receivables chaser on invoices | Possible variant if invoice APIs + synthetic AR are clean in test-mode |
+| B2B receivables chaser on invoices | Possible variant if invoice APIs + synthetic AR are clean in MVP mode (Razorpay Test Mode) |
 
 ## Fit with my skills
 
@@ -193,13 +193,13 @@ Excellent match: tabular ML (XGBoost), expected-value framing, FastAPI orchestra
 
 | Piece | Plan |
 | --- | --- |
-| Payments | Razorpay test-mode subscriptions / invoices / payment links |
+| Payments | Razorpay Test Mode subscriptions / invoices / payment links |
 | Failures | Synthetic failure reasons + webhook fixtures (clearly labeled simulated) |
 | Outreach | Log/simulate channels; optional free email sandbox; do not fake WhatsApp delivery metrics |
 | Models | sklearn / XGBoost / local or free LLM tier for diagnosis text only |
 | Metric | Incremental recovered revenue vs fixed-policy baseline on a held-out batch |
 
-Never pretend a test-mode charge is a real rupee. Report **simulated recovered value** honestly if live merchant money is unavailable.
+Never pretend a MVP mode (Razorpay Test Mode) charge is a real rupee. Report **simulated recovered value** honestly if live merchant money is unavailable.
 
 ## Current verdict on Track 03
 

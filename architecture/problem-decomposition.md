@@ -57,8 +57,8 @@ Outcome + AuditEvent
 
 | Action ID | Description | Execution | Cost model (demo) |
 | --- | --- | --- | --- |
-| `silent_retry` | Signal / schedule another charge attempt | Log + optional test-mode charge path | Low |
-| `payment_link` | Create Razorpay Payment Link for recovery | Razorpay test-mode API | Medium |
+| `silent_retry` | Signal / schedule another charge attempt | Log + optional MVP mode (Razorpay Test Mode) charge path | Low |
+| `payment_link` | Create Razorpay Payment Link for recovery | Razorpay Test Mode API | Medium |
 | `notify_update_method` | Log “send update-method outreach” | **Simulated** (audit only) | Medium |
 | `escalate` | Flag for human review | Queue status only | Ops cost |
 | `stop` | Do not act further | Terminal | Zero action cost |
@@ -87,5 +87,5 @@ No voice/WhatsApp send in MVP. Simulation must be labeled `simulated` in metrics
 | Looks like “AI retry” | Scoreboard = lift vs baseline; `stop` is first-class |
 | Duplicate webhook processing | Idempotent `event_id` / `case_key` |
 | LLM invents actions | JSON schema + allowlist; policy drops unknowns |
-| Fake money claims | Labels: `test_mode` vs `simulated` |
+| Fake money claims | Labels: `mvp_mode` vs `simulated` |
 | Scope creep (voice, multi-channel) | Explicitly out of MVP |

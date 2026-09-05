@@ -1,4 +1,4 @@
-"""Executors: dry-run, simulated outreach, and Razorpay test-mode Payment Links."""
+"""Executors: dry-run, simulated outreach, and MVP-mode Razorpay Payment Links."""
 
 from __future__ import annotations
 
@@ -26,11 +26,11 @@ class ExecuteResult:
 
 
 class PaymentLinkExecutionError(RuntimeError):
-    """Raised when a configured Razorpay test-mode request cannot be completed safely."""
+    """Raised when a configured Razorpay Test Mode request cannot be completed safely."""
 
 
 class PaymentLinkConfigurationError(ValueError):
-    """Raised when a supposedly test-mode request is configured with unsafe credentials."""
+    """Raised when MVP mode is configured with anything but Razorpay Test Mode keys."""
 
 
 def _is_razorpay_test_key(key_id: str) -> bool:
@@ -81,7 +81,7 @@ def _result_from_payment_link(
     if not isinstance(link_id, str) or not isinstance(short_url, str):
         raise PaymentLinkExecutionError("razorpay_payment_link_response_invalid")
     return ExecuteResult(
-        mode=ExecutionMode.LIVE_TEST.value,
+        mode=ExecutionMode.MVP_MODE.value,
         request=request_payload,
         response={
             "ok": True,
@@ -157,11 +157,12 @@ def execute_action(
     decision_id: str | None = None,
 ) -> ExecuteResult:
     """
-    Day 04: always safe.
+    Always safe.
     - stop / escalate → dry_run log
     - notify_update_method → simulated outreach
-    - silent_retry / payment_link → dry_run unless explicitly configured for test_mode
-    - payment_link in test_mode with both Razorpay test keys → live test Payment Link
+    - silent_retry / payment_link → dry_run unless explicitly configured for mvp_mode
+    - payment_link in mvp_mode with Razorpay Test Mode keys → Test Mode Payment Link
+    - live/production Razorpay keys are rejected before any HTTP call
     """
     settings = get_settings()
     mode = settings.rebound_execution_mode
@@ -197,11 +198,11 @@ def execute_action(
         )
 
     # silent_retry or payment_link
-    if mode == "test_mode" and action == Action.PAYMENT_LINK:
+    if mode == "mvp_mode" and action == Action.PAYMENT_LINK:
         if settings.razorpay_key_id and settings.razorpay_key_secret:
             if not _is_razorpay_test_key(settings.razorpay_key_id):
                 raise PaymentLinkConfigurationError(
-                    "razorpay_test_mode_requires_rzp_test_key"
+                    "razorpay_mvp_mode_requires_rzp_test_key"
                 )
             return _create_razorpay_payment_link(
                 case_id=case_id,
@@ -217,7 +218,7 @@ def execute_action(
             request={"action": action.value, "case_id": case_id, "amount_paise": amount_paise},
             response={
                 "ok": True,
-                "detail": "dry_run_payment_link_missing_razorpay_test_credentials",
+                "detail": "dry_run_payment_link_missing_razorpay_mvp_credentials",
                 "would_create_payment_link": True,
             },
         )

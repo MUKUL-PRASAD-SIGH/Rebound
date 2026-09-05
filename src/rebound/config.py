@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
+from typing import Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -12,7 +13,9 @@ class Settings(BaseSettings):
     razorpay_key_id: str = ""
     razorpay_key_secret: str = ""
     razorpay_webhook_secret: str = ""
-    rebound_execution_mode: str = "dry_run"  # dry_run | test_mode
+    # Rebound's app-level execution setting. ``mvp_mode`` always uses Razorpay
+    # Test Mode credentials; production/live execution is deliberately unsupported.
+    rebound_execution_mode: Literal["dry_run", "mvp_mode"] = "dry_run"
     rebound_enable_llm_proposer: bool = False
     openai_api_key: str = ""
     openai_model: str = "gpt-4o-mini"

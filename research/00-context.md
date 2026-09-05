@@ -20,7 +20,7 @@ I want the repository to answer a harder question first:
 
 | Constraint | Notes |
 | --- | --- |
-| ₹0 build | Prefer Razorpay test-mode, free/open-source ML, free model tiers, synthetic data, local/free deploys |
+| ₹0 build | Prefer Razorpay Test Mode, free/open-source ML, free model tiers, synthetic data, local/free deploys |
 | Solo / small team | Depth over breadth |
 | Skills I already have | Python, ML, PyTorch, XGBoost/tabular ML, FastAPI, React/TypeScript, agentic AI, RAG, multi-agent systems, APIs, databases |
 | Preference | Technically deep end-to-end systems over UI demos |

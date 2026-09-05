@@ -13,7 +13,7 @@ Finish Aug 21 completely: research all tracks, lock PS, leave architecture for A
 ## Decisions
 - Rebound = EV decision layer, not AI retries
 - Differentiation sentence locked vs Agent Studio Subscription Recovery
-- Test-mode path: webhook-shaped events + payment links + subscriptions/invoices where usable; simulate outreach honestly
+- MVP mode (Razorpay Test Mode) path: webhook-shaped events + payment links + subscriptions/invoices where usable; simulate outreach honestly
 - Claude/NotebookLM/Gemini extra passes deferred (schedule > tool tourism)
 - After today: no open-ended PS research
 

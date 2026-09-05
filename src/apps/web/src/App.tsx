@@ -41,9 +41,9 @@ export default function App() {
         <div className="sidebar__footer">
           <div className="system-card">
             <div className="system-card__line"><span className="live-dot" /> System ready</div>
-            <p>All decisions are policy-gated and test-mode safe.</p>
+            <p>All decisions are policy-gated and MVP-mode safe.</p>
           </div>
-          <span className="environment-label"><Icon name="shield" size={14} /> Test-mode workspace</span>
+          <span className="environment-label"><Icon name="shield" size={14} /> MVP-mode workspace</span>
         </div>
       </aside>
 

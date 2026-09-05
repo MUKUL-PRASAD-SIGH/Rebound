@@ -21,7 +21,7 @@ Single checklist of everything needed to run Rebound end-to-end. **Nothing here 
 | `pydantic`, `pydantic-settings` | Config + schemas |
 | `python-dotenv` | Load `.env` |
 | `numpy`, `scikit-learn` | Features + recoverability model |
-| `httpx` | FastAPI `TestClient` / Razorpay test-mode HTTP | **Required for pytest**; only calls Razorpay when test mode and both keys are configured |
+| `httpx` | FastAPI `TestClient` / Razorpay MVP-mode HTTP | **Required for pytest**; only calls Razorpay when MVP mode and both keys are configured |
 | `pytest` | Test suite | `cd src && python -m pytest tests -q` |
 
 ### Default ports
@@ -33,16 +33,24 @@ Single checklist of everything needed to run Rebound end-to-end. **Nothing here 
 
 ---
 
-## Optional — Razorpay (test mode)
+## Optional — Razorpay MVP mode (backed by Razorpay Test Mode)
 
 | Env var | Used for | Required? |
 | --- | --- | --- |
 | `RAZORPAY_KEY_ID` | Payment Link Basic Auth key | **No** — dry_run works without keys |
-| `RAZORPAY_KEY_SECRET` | Payment Link Basic Auth secret | **No** — both key and secret are required for a test-mode call |
-| `RAZORPAY_WEBHOOK_SECRET` | Webhook signature verification | **No** — when set, validates `X-Razorpay-Signature` against the raw request body |
-| `REBOUND_EXECUTION_MODE` | `dry_run` (default) \| `test_mode` | `test_mode` plus both test keys is required to create a real Razorpay **test-mode** Payment Link; a key ID not starting `rzp_test_` is rejected before any HTTP call |
+| `RAZORPAY_KEY_SECRET` | Payment Link Basic Auth secret | **No** — both key and secret are required for an MVP-mode call |
+| `RAZORPAY_WEBHOOK_SECRET` | Webhook signature verification | **No** — required only for signed public webhook testing; validates `X-Razorpay-Signature` against the raw request body |
+| `REBOUND_EXECUTION_MODE` | `dry_run` (default) \| `mvp_mode` | `mvp_mode` plus both Razorpay Test Mode keys creates a real Razorpay Test Mode Payment Link; a key ID not starting `rzp_test_` is rejected before any HTTP call |
 
-**Execution safety:** the default remains offline `dry_run`. In explicitly configured `test_mode`, Rebound creates one standard Payment Link per decision with notifications/reminders disabled, a deterministic 40-character-or-less `reference_id`, and reconciliation by that reference after an ambiguous request failure. Outcomes remain labelled `simulated`; creating a link is not treated as a recovered payment.
+**Execution safety:** the default remains offline `dry_run`. In explicitly configured `mvp_mode`, Rebound creates one standard Payment Link per decision with notifications/reminders disabled, a deterministic 40-character-or-less `reference_id`, and reconciliation by that reference after an ambiguous request failure. It records the link as **pending** and accepts recovery only after a signed `payment_link.paid` webhook. Other recovery outcomes remain labelled `simulated`.
+
+MVP mode additionally allows authenticated, read-only Test Mode inspection:
+
+- `POST /api/v1/cases/{case_id}/refresh-payment-link` reconciles a Rebound-created link from Razorpay’s current `paid` / `expired` / `cancelled` status when a public webhook is not available.
+- `GET /api/v1/razorpay/subscriptions/{sub_id}` fetches one subscription.
+- `GET /api/v1/razorpay/subscriptions/{sub_id}/invoices` fetches its invoices.
+
+All three require `mvp_mode` and Test Mode credentials. They reject live keys and have no create, capture, cancel, or update capability.
 
 Copy [`.env.example`](../.env.example) → `.env` only if you want to experiment with keys.
 
@@ -58,7 +66,7 @@ Copy [`.env.example`](../.env.example) → `.env` only if you want to experiment
 
 When enabled, Rebound sends only non-identifying recovery signals (amount, currency, failure class, attempt count, tenure, payment method, and deterministic candidate metrics) to the OpenAI Responses API. The model can choose only from precomputed, non-exhausted action candidates and returns schema-constrained JSON. Rebound recomputes probability and expected value deterministically, then sends the proposal through the same mandatory policy gate. Missing credentials, failed requests, and invalid model output fall back to the offline EV proposer. Requests use `store=false`.
 
-Product thesis does **not** depend on an LLM; the default decide → gate → execute → eval loop remains offline.
+Product thesis does **not** depend on an LLM; the default decide → gate → execute → eval loop remains offline. To use it in MVP mode, enable the flag and provide an `OPENAI_API_KEY`; it still has no execution authority.
 
 ---
 
@@ -94,4 +102,4 @@ python -m uvicorn apps.api.main:app --app-dir src --reload --port 8000
 cd src/apps/web && npm install && npm run dev
 ```
 
-Local run, demo flow, and verification directions: [`README.md`](../README.md#run-locally)
+Local run, MVP-mode keys, demo flow, and verification directions: [`README.md`](../README.md#mvp-mode-functional-testing-without-production-money)

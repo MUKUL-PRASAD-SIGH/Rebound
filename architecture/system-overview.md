@@ -7,7 +7,7 @@
 ```text
 ┌─────────────┐     webhook / synthetic      ┌──────────────────┐
 │  Razorpay   │ ───────────────────────────▶ │   Rebound API    │
-│  test-mode  │ ◀── Payment Links / reads ── │    (FastAPI)     │
+│  MVP mode (Razorpay Test Mode)  │ ◀── Payment Links / reads ── │    (FastAPI)     │
 └─────────────┘                              └────────┬─────────┘
                                                       │
                  ┌────────────────────────────────────┼────────────────────────┐
@@ -35,7 +35,7 @@ sequenceDiagram
   participant Src as Webhook/Synthetic
   participant API as FastAPI
   participant Pol as Policy
-  participant RZ as Razorpay test-mode
+  participant RZ as Razorpay Test Mode
   participant DB as SQLite
 
   Src->>API: event / batch row
@@ -47,7 +47,9 @@ sequenceDiagram
     Pol->>API: allow
     API->>RZ: create Payment Link
     RZ-->>API: link id/url
-    API->>DB: ActionAttempt + Audit
+    API->>DB: pending ActionAttempt + Audit
+    RZ->>API: signed payment_link.paid webhook
+    API->>DB: reconcile outcome = recovered
   else stop / escalate / simulate notify
     Pol->>API: allow rewritten or stop
     API->>DB: ActionAttempt (simulated/dry_run) + Audit
@@ -96,9 +98,9 @@ src/
 
 | Var | Purpose |
 | --- | --- |
-| `RAZORPAY_KEY_ID` / `SECRET` | Test-mode |
+| `RAZORPAY_KEY_ID` / `SECRET` | MVP mode (Razorpay Test Mode) |
 | `RAZORPAY_WEBHOOK_SECRET` | Optional verify |
-| `REBOUND_EXECUTION_MODE` | `dry_run` \| `test_mode` |
+| `REBOUND_EXECUTION_MODE` | `dry_run` \| `mvp_mode` |
 | `REBOUND_ENABLE_LLM_PROPOSER` | default `false` |
 | `DATABASE_URL` | sqlite:///./rebound.db |
 

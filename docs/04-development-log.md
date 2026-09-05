@@ -11,7 +11,7 @@ Repo skeleton, docs system, schedule.
 ## Phase 2 — Architecture (22 Aug)
 - Problem decomposition, MVP freeze, data model, API surface, ADRs
 - Deliverables: `architecture/*`, `docs/03-architecture.md`
-- Stack locked: FastAPI + SQLite + React + rules/EV + optional LLM + Razorpay test-mode Payment Links
+- Stack locked: FastAPI + SQLite + React + rules/EV + optional LLM + Razorpay Test Mode Payment Links
 
 ## Phase 3 — MVP (23–26 Aug)
 - Aug 23: Skeleton ✅ (API + SQLite + React shell + seed)

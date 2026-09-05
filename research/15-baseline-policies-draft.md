@@ -64,7 +64,7 @@ Prefer `notify_update_method` then `payment_link` until hard caps (`max_actions=
 
 | Source | Label |
 | --- | --- |
-| Payment Link paid in test-mode | `test_mode` recovered |
+| Payment Link paid in MVP mode (Razorpay Test Mode) | `mvp_mode` recovered |
 | Synthetic outcome model / scripted resolve | `simulated` recovered |
 | Stop without recovery | not recovered |
 

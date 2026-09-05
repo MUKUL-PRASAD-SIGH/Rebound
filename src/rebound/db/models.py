@@ -113,6 +113,19 @@ class Outcome(Base):
     case: Mapped[Case] = relationship(back_populates="outcomes")
 
 
+class RazorpayWebhookEvent(Base):
+    """Idempotency record for signed Razorpay webhook deliveries."""
+
+    __tablename__ = "razorpay_webhook_events"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    external_event_id: Mapped[str] = mapped_column(String(128), unique=True, index=True)
+    event_type: Mapped[str] = mapped_column(String(96), default="unknown")
+    case_id: Mapped[str | None] = mapped_column(ForeignKey("cases.id"), nullable=True, index=True)
+    payload_json: Mapped[str] = mapped_column(Text, default="{}")
+    received_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+
+
 class AuditEvent(Base):
     __tablename__ = "audit_events"
 

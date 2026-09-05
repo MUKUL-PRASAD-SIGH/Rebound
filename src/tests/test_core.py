@@ -21,12 +21,17 @@ from rebound.db.models import ActionAttempt, Base, Case, Decision, Outcome  # no
 from rebound.db.session import get_db  # noqa: E402
 from rebound.eval import run_eval  # noqa: E402
 from rebound.execute import (  # noqa: E402
+    ExecuteResult,
     PaymentLinkConfigurationError,
     PaymentLinkExecutionError,
     execute_action,
 )
 from rebound.features import FAILURE_CLASSES, METHODS, extract_features, vectorize  # noqa: E402
-from rebound.ingest import IngestValidationError, upsert_from_webhook_payload  # noqa: E402
+from rebound.ingest import (  # noqa: E402
+    IngestValidationError,
+    process_razorpay_webhook,
+    upsert_from_webhook_payload,
+)
 from rebound.policy import gate  # noqa: E402
 from rebound.propose import propose_ev, propose_for_case, propose_rules_ladder  # noqa: E402
 from rebound.schemas.api import ProposalPayload  # noqa: E402
@@ -459,6 +464,72 @@ def test_execute_idempotent(db: Session):
     assert n == 1
 
 
+def test_mvp_mode_payment_link_waits_for_and_reconciles_signed_webhook(db: Session, monkeypatch):
+    import rebound.workflow as workflow
+
+    case = _case(case_key="mvp-payment-link", amount_paise=12_345)
+    db.add(case)
+    db.flush()
+    decision = Decision(
+        case_id=case.id,
+        action=Action.PAYMENT_LINK.value,
+        gate_result=GateResult.ALLOW.value,
+        gate_reason="test",
+    )
+    db.add(decision)
+    db.commit()
+
+    monkeypatch.setattr(
+        workflow,
+        "execute_action",
+        lambda *_args, **_kwargs: ExecuteResult(
+            mode="mvp_mode",
+            request={"action": "payment_link"},
+            response={"ok": True, "payment_link_id": "plink_mvp_123"},
+            razorpay_payment_link_id="plink_mvp_123",
+        ),
+    )
+    attempt = execute_latest_decision(db, case)
+    pending = db.scalar(select(Outcome).where(Outcome.action_attempt_id == attempt.id))
+    assert pending is not None
+    assert pending.result == "pending"
+    assert pending.label == "mvp_mode"
+    assert db.get(Case, case.id).status == CaseStatus.ACTING.value
+
+    result = process_razorpay_webhook(
+        db,
+        {
+            "event": "payment_link.paid",
+            "payload": {
+                "payment_link": {
+                    "entity": {
+                        "id": "plink_mvp_123",
+                        "amount": 12_345,
+                        "amount_paid": 12_345,
+                        "notes": {"rebound_case_id": case.id},
+                    }
+                }
+            },
+        },
+        event_id="evt_mvp_paid_123",
+    )
+    assert result.created is False
+    assert result.reconciled is True
+    assert result.case.id == case.id
+    assert pending.result == "recovered"
+    assert pending.value_paise == 12_345
+    assert db.get(Case, case.id).status == CaseStatus.RECOVERED.value
+
+    duplicate = process_razorpay_webhook(
+        db,
+        {"event": "payment_link.paid"},
+        event_id="evt_mvp_paid_123",
+    )
+    assert duplicate.reconciled is False
+    assert duplicate.case.id == case.id
+    assert db.scalar(select(Outcome).where(Outcome.action_attempt_id == attempt.id)) == pending
+
+
 def test_execute_without_decision_raises(db: Session):
     case = _case(case_key="no-dec")
     db.add(case)
@@ -467,11 +538,11 @@ def test_execute_without_decision_raises(db: Session):
         execute_latest_decision(db, case)
 
 
-def test_test_mode_payment_link_uses_razorpay_contract(monkeypatch):
+def test_mvp_mode_payment_link_uses_razorpay_contract(monkeypatch):
     import rebound.execute as execution
 
     class TestSettings:
-        rebound_execution_mode = "test_mode"
+        rebound_execution_mode = "mvp_mode"
         razorpay_key_id = "rzp_test_key"
         razorpay_key_secret = "rzp_test_secret"
 
@@ -499,7 +570,7 @@ def test_test_mode_payment_link_uses_razorpay_contract(monkeypatch):
         decision_id="decision-123",
     )
 
-    assert result.mode == "live_test"
+    assert result.mode == "mvp_mode"
     assert result.razorpay_payment_link_id == "plink_test_123"
     assert captured["url"] == "https://api.razorpay.com/v1/payment_links"
     assert captured["auth"] == ("rzp_test_key", "rzp_test_secret")
@@ -511,11 +582,11 @@ def test_test_mode_payment_link_uses_razorpay_contract(monkeypatch):
     assert len(body["reference_id"]) <= 40
 
 
-def test_test_mode_payment_link_rejects_live_key_without_http(monkeypatch):
+def test_mvp_mode_payment_link_rejects_live_key_without_http(monkeypatch):
     import rebound.execute as execution
 
     class LiveKeySettings:
-        rebound_execution_mode = "test_mode"
+        rebound_execution_mode = "mvp_mode"
         razorpay_key_id = "rzp_live_key"
         razorpay_key_secret = "live_secret"
 
@@ -528,7 +599,7 @@ def test_test_mode_payment_link_rejects_live_key_without_http(monkeypatch):
 
     with pytest.raises(
         PaymentLinkConfigurationError,
-        match="razorpay_test_mode_requires_rzp_test_key",
+        match="razorpay_mvp_mode_requires_rzp_test_key",
     ):
         execute_action(
             Action.PAYMENT_LINK,
@@ -539,11 +610,11 @@ def test_test_mode_payment_link_rejects_live_key_without_http(monkeypatch):
         )
 
 
-def test_test_mode_payment_link_reconciles_ambiguous_request(monkeypatch):
+def test_mvp_mode_payment_link_reconciles_ambiguous_request(monkeypatch):
     import rebound.execute as execution
 
     class TestSettings:
-        rebound_execution_mode = "test_mode"
+        rebound_execution_mode = "mvp_mode"
         razorpay_key_id = "rzp_test_key"
         razorpay_key_secret = "rzp_test_secret"
 
@@ -588,6 +659,54 @@ def test_test_mode_payment_link_reconciles_ambiguous_request(monkeypatch):
     assert captured["url"] == "https://api.razorpay.com/v1/payment_links"
 
 
+def test_mvp_mode_razorpay_reads_use_only_test_credentials(monkeypatch):
+    import rebound.razorpay as razorpay
+
+    class MvpSettings:
+        rebound_execution_mode = "mvp_mode"
+        razorpay_key_id = "rzp_test_key"
+        razorpay_key_secret = "rzp_test_secret"
+
+    captured: dict[str, object] = {}
+
+    def fake_get(url: str, **kwargs):
+        captured["url"] = url
+        captured.update(kwargs)
+        return httpx.Response(
+            200,
+            json={"id": "sub_mvp_123", "status": "active"},
+            request=httpx.Request("GET", url),
+        )
+
+    monkeypatch.setattr(razorpay, "get_settings", lambda: MvpSettings())
+    monkeypatch.setattr(razorpay.httpx, "get", fake_get)
+
+    result = razorpay.fetch_subscription("sub_mvp_123")
+
+    assert result["status"] == "active"
+    assert captured["url"] == "https://api.razorpay.com/v1/subscriptions/sub_mvp_123"
+    assert captured["auth"] == ("rzp_test_key", "rzp_test_secret")
+
+
+def test_mvp_mode_razorpay_reads_reject_live_key_without_http(monkeypatch):
+    import rebound.razorpay as razorpay
+
+    class LiveKeySettings:
+        rebound_execution_mode = "mvp_mode"
+        razorpay_key_id = "rzp_live_key"
+        razorpay_key_secret = "live_secret"
+
+    monkeypatch.setattr(razorpay, "get_settings", lambda: LiveKeySettings())
+    monkeypatch.setattr(
+        razorpay.httpx,
+        "get",
+        lambda *_args, **_kwargs: pytest.fail("live key must not make an HTTP request"),
+    )
+
+    with pytest.raises(razorpay.RazorpayMvpConfigurationError):
+        razorpay.fetch_payment_link("plink_mvp_123")
+
+
 def test_api_payment_link_failure_returns_502_without_attempt(client: TestClient, engine, monkeypatch):
     import rebound.workflow as workflow
 
@@ -619,6 +738,81 @@ def test_api_payment_link_failure_returns_502_without_attempt(client: TestClient
         assert session.scalar(
             select(ActionAttempt).where(ActionAttempt.case_id == case_id).limit(1)
         ) is None
+
+
+def test_api_refresh_payment_link_reconciles_authoritative_read(client: TestClient, engine, monkeypatch):
+    from apps.api import main as api_main
+
+    SessionLocal = sessionmaker(bind=engine)
+    with SessionLocal() as session:
+        case = _case(case_key="refresh-link-case", amount_paise=25_000)
+        session.add(case)
+        session.flush()
+        decision = Decision(
+            case_id=case.id,
+            action=Action.PAYMENT_LINK.value,
+            gate_result=GateResult.ALLOW.value,
+            gate_reason="test",
+        )
+        session.add(decision)
+        session.flush()
+        attempt = ActionAttempt(
+            case_id=case.id,
+            decision_id=decision.id,
+            action=Action.PAYMENT_LINK.value,
+            mode="mvp_mode",
+            request_json="{}",
+            response_json="{}",
+            razorpay_payment_link_id="plink_refresh_123",
+            idempotency_key="refresh-link-attempt",
+        )
+        session.add(attempt)
+        session.flush()
+        session.add(
+            Outcome(
+                case_id=case.id,
+                action_attempt_id=attempt.id,
+                result="pending",
+                value_paise=0,
+                label="mvp_mode",
+            )
+        )
+        session.commit()
+        case_id = case.id
+
+    monkeypatch.setattr(
+        api_main,
+        "fetch_payment_link",
+        lambda _link_id: {"id": "plink_refresh_123", "status": "paid", "amount_paid": 25_000},
+    )
+    response = client.post(f"/api/v1/cases/{case_id}/refresh-payment-link")
+
+    assert response.status_code == 200
+    assert response.json()["reconciled"] is True
+    assert response.json()["case_status"] == "recovered"
+
+
+def test_api_read_only_subscription_routes(client: TestClient, monkeypatch):
+    from apps.api import main as api_main
+
+    monkeypatch.setattr(
+        api_main,
+        "fetch_subscription",
+        lambda subscription_id: {"id": subscription_id, "status": "active"},
+    )
+    monkeypatch.setattr(
+        api_main,
+        "fetch_subscription_invoices",
+        lambda subscription_id: {"count": 1, "items": [{"subscription_id": subscription_id}]},
+    )
+
+    subscription = client.get("/api/v1/razorpay/subscriptions/sub_read_123")
+    invoices = client.get("/api/v1/razorpay/subscriptions/sub_read_123/invoices")
+
+    assert subscription.status_code == 200
+    assert subscription.json()["status"] == "active"
+    assert invoices.status_code == 200
+    assert invoices.json()["count"] == 1
 
 
 # --- ingest ---
@@ -738,6 +932,21 @@ def test_api_seed_decide_execute_eval(client: TestClient, tmp_path, monkeypatch)
 def test_api_webhook_400(client: TestClient):
     r = client.post("/api/v1/ingest/webhooks/razorpay", json={})
     assert r.status_code == 400
+
+
+def test_api_mvp_mode_requires_webhook_secret(client: TestClient, monkeypatch):
+    from apps.api import main as api_main
+
+    monkeypatch.setattr(api_main.settings, "rebound_execution_mode", "mvp_mode")
+    monkeypatch.setattr(api_main.settings, "razorpay_webhook_secret", "")
+
+    response = client.post(
+        "/api/v1/ingest/webhooks/razorpay",
+        json={"id": "evt_mvp_unsigned", "amount_paise": 12_000, "customer_ref": "cust_mvp"},
+    )
+
+    assert response.status_code == 503
+    assert response.json()["detail"] == "razorpay_mvp_webhook_secret_required"
 
 
 def test_api_webhook_signature_when_secret_configured(client: TestClient, monkeypatch):

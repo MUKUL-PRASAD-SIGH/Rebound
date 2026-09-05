@@ -5,10 +5,12 @@ import {
   executeCase,
   getCase,
   getCaseAudit,
+  refreshPaymentLink,
   type AuditEvent,
   type CaseRow,
   type DecideResult,
   type ExecuteResult,
+  type PaymentLinkRefreshResult,
 } from "../api";
 import { EmptyState, formatCurrency, Icon, StatusPill, titleCase } from "../ui";
 
@@ -24,8 +26,9 @@ export default function CaseDetailPage() {
   const [audit, setAudit] = useState<AuditEvent[]>([]);
   const [lastDecide, setLastDecide] = useState<DecideResult | null>(null);
   const [lastExecute, setLastExecute] = useState<ExecuteResult | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<PaymentLinkRefreshResult | null>(null);
   const [error, setError] = useState("");
-  const [busy, setBusy] = useState<"decide" | "decide-execute" | "execute" | null>(null);
+  const [busy, setBusy] = useState<"decide" | "decide-execute" | "execute" | "refresh" | null>(null);
 
   const refresh = useCallback(async () => {
     if (!id) return;
@@ -65,6 +68,20 @@ export default function CaseDetailPage() {
     setError("");
     try {
       setLastExecute(await executeCase(id));
+      await refresh();
+    } catch (requestError) {
+      setError(String(requestError));
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function onRefreshPaymentLink() {
+    if (!id) return;
+    setBusy("refresh");
+    setError("");
+    try {
+      setLastRefresh(await refreshPaymentLink(id));
       await refresh();
     } catch (requestError) {
       setError(String(requestError));
@@ -142,6 +159,14 @@ export default function CaseDetailPage() {
 
               {lastExecute ? (
                 <div className="execution-result"><Icon name="check" size={17} /><span>Executed <code>{titleCase(lastExecute.action)}</code> in <code>{lastExecute.mode}</code> mode.</span></div>
+              ) : null}
+              {lastExecute?.action === "payment_link" && lastExecute.mode === "mvp_mode" ? (
+                <button className="text-button" disabled={busy !== null} onClick={() => void onRefreshPaymentLink()} type="button">
+                  {busy === "refresh" ? "Refreshing Razorpay status…" : "Refresh Razorpay Test Mode status"} <Icon name="refresh" size={15} />
+                </button>
+              ) : null}
+              {lastRefresh ? (
+                <div className="execution-result"><Icon name="check" size={17} /><span>Razorpay reports <code>{titleCase(lastRefresh.payment_link_status)}</code>; case is <code>{titleCase(lastRefresh.case_status)}</code>.</span></div>
               ) : null}
             </section>
 

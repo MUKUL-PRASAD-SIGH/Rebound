@@ -14,11 +14,19 @@ from rebound import __version__
 from rebound.audit import append_audit
 from rebound.config import get_settings
 from rebound.db import Case, EvalRun, get_db, init_db
-from rebound.db.models import AuditEvent, Decision
+from rebound.db.models import ActionAttempt, AuditEvent, Decision
 from rebound.ingest import (
     IngestValidationError,
-    upsert_from_webhook_payload,
+    process_razorpay_webhook,
+    reconcile_payment_link_state,
     verify_razorpay_webhook_signature,
+)
+from rebound.razorpay import (
+    RazorpayMvpConfigurationError,
+    RazorpayMvpRequestError,
+    fetch_payment_link,
+    fetch_subscription,
+    fetch_subscription_invoices,
 )
 from rebound.schemas.api import (
     AuditEventOut,
@@ -175,6 +183,8 @@ async def ingest_webhook(
     db: Session = Depends(get_db),
 ) -> WebhookIngestResponse:
     raw_body = await request.body()
+    if settings.rebound_execution_mode == "mvp_mode" and not settings.razorpay_webhook_secret:
+        raise HTTPException(status_code=503, detail="razorpay_mvp_webhook_secret_required")
     if not verify_razorpay_webhook_signature(
         raw_body,
         request.headers.get("X-Razorpay-Signature"),
@@ -182,11 +192,21 @@ async def ingest_webhook(
     ):
         raise HTTPException(status_code=401, detail="invalid_webhook_signature")
     try:
-        case, created = upsert_from_webhook_payload(db, payload)
+        result = process_razorpay_webhook(
+            db,
+            payload,
+            event_id=request.headers.get("X-Razorpay-Event-Id"),
+        )
     except IngestValidationError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     db.commit()
-    return WebhookIngestResponse(case_id=case.id, case_key=case.case_key, created=created)
+    return WebhookIngestResponse(
+        case_id=result.case.id,
+        case_key=result.case.case_key,
+        created=result.created,
+        reconciled=result.reconciled,
+        event_type=result.event_type,
+    )
 
 
 @app.post("/api/v1/cases/batch/decide")
@@ -244,7 +264,7 @@ def execute(case_id: str, db: Session = Depends(get_db)) -> ExecuteResponse:
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except PaymentLinkExecutionError as exc:
-        # Do not create an attempt/outcome when the external test-mode request failed.
+        # Do not create an attempt/outcome when the external MVP-mode request failed.
         raise HTTPException(status_code=502, detail=str(exc)) from exc
     return ExecuteResponse(
         attempt_id=attempt.id,
@@ -254,6 +274,66 @@ def execute(case_id: str, db: Session = Depends(get_db)) -> ExecuteResponse:
         response=json.loads(attempt.response_json or "{}"),
         razorpay_payment_link_id=attempt.razorpay_payment_link_id,
     )
+
+
+@app.post("/api/v1/cases/{case_id}/refresh-payment-link")
+def refresh_payment_link(case_id: str, db: Session = Depends(get_db)) -> dict[str, Any]:
+    """Read a Rebound-created Test Mode link and reconcile a terminal state."""
+    case = db.get(Case, case_id)
+    if not case:
+        raise HTTPException(status_code=404, detail="case not found")
+    attempt = db.scalar(
+        select(ActionAttempt)
+        .where(
+            ActionAttempt.case_id == case_id,
+            ActionAttempt.mode == "mvp_mode",
+            ActionAttempt.razorpay_payment_link_id.is_not(None),
+        )
+        .order_by(ActionAttempt.created_at.desc())
+    )
+    if not attempt or not attempt.razorpay_payment_link_id:
+        raise HTTPException(status_code=400, detail="no_mvp_payment_link")
+    try:
+        link = fetch_payment_link(attempt.razorpay_payment_link_id)
+        reconciled_case = reconcile_payment_link_state(
+            db,
+            link,
+            source="razorpay_api_read",
+        )
+    except RazorpayMvpConfigurationError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except RazorpayMvpRequestError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    db.commit()
+    return {
+        "case_id": case.id,
+        "payment_link_id": attempt.razorpay_payment_link_id,
+        "payment_link_status": link.get("status"),
+        "reconciled": reconciled_case is not None,
+        "case_status": reconciled_case.status if reconciled_case else case.status,
+    }
+
+
+@app.get("/api/v1/razorpay/subscriptions/{subscription_id}")
+def get_razorpay_subscription(subscription_id: str) -> dict[str, Any]:
+    """Read one Razorpay Test Mode subscription; no changes are permitted."""
+    try:
+        return fetch_subscription(subscription_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except RazorpayMvpRequestError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.get("/api/v1/razorpay/subscriptions/{subscription_id}/invoices")
+def get_razorpay_subscription_invoices(subscription_id: str) -> dict[str, Any]:
+    """Read Razorpay Test Mode invoices for a subscription; no changes are permitted."""
+    try:
+        return fetch_subscription_invoices(subscription_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except RazorpayMvpRequestError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
 @app.get("/api/v1/eval/runs")

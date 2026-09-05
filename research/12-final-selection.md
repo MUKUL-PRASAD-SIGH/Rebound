@@ -34,7 +34,7 @@ LOCKED: Track 03 — expected-value revenue recovery controller
 
 ## Final problem statement
 
-Subscription and checkout revenue rarely dies in one clean failure. It degrades across failed charges, stale payment methods, customer inaction, and recovery efforts that either under-react or over-spend. Razorpay already provides retries, webhooks, hosted payment-method updates, and agent-style recovery products — but merchants still need a measurable decision layer that chooses the economically right bounded action (including when not to act). Rebound is that controller: detect revenue at risk → estimate recoverability and intervention value → enforce guardrails → act through test-mode Razorpay workflows → measure incremental lift.
+Subscription and checkout revenue rarely dies in one clean failure. It degrades across failed charges, stale payment methods, customer inaction, and recovery efforts that either under-react or over-spend. Razorpay already provides retries, webhooks, hosted payment-method updates, and agent-style recovery products — but merchants still need a measurable decision layer that chooses the economically right bounded action (including when not to act). Rebound is that controller: detect revenue at risk → estimate recoverability and intervention value → enforce guardrails → act through MVP mode (Razorpay Test Mode) Razorpay workflows → measure incremental lift.
 
 ## Final project thesis
 
@@ -54,9 +54,9 @@ Subscription and checkout revenue rarely dies in one clean failure. It degrades 
 | Piece | Choice |
 | --- | --- |
 | Primary failure domain | Failed subscription / recurring-style charges (+ optional checkout abandonment later) |
-| Razorpay surfaces (test-mode) | Webhook-shaped events, subscriptions/invoices where usable, **Payment Links** as recovery action, dashboard/API reads |
+| Razorpay surfaces (MVP mode (Razorpay Test Mode)) | Webhook-shaped events, subscriptions/invoices where usable, **Payment Links** as recovery action, dashboard/API reads |
 | What we simulate | Outreach channels (email/WhatsApp/voice logged, not faked as delivered); some failure labels in synthetic batch |
-| What we never pretend | Test-mode ₹ = real money |
+| What we never pretend | MVP mode (Razorpay Test Mode) ₹ = real money |
 | Baseline to beat | Fixed policy (e.g. always retry N times → always send update link → stop) |
 | North-star metric | Incremental recovered value vs baseline on a held-out batch |
 | Safety | Model proposes → policy engine gates → allowlisted execute → audit |

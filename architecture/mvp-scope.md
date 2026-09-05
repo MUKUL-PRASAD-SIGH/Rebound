@@ -23,7 +23,7 @@
 | Scoring | Heuristic + simple sklearn/XGBoost-or-logistic model trained on synthetic labels |
 | Propose | Deterministic proposer using EV; optional LLM proposer behind flag (structured JSON only) |
 | Policy | Allowlist, max retries, max notifies, min EV, confidence floor, force-stop rules |
-| Execute | Create Payment Link in **test-mode** when configured; else dry-run executor |
+| Execute | Create Payment Link in **MVP mode (Razorpay Test Mode)** when configured; else dry-run executor |
 | Execute | `notify_update_method` / outreach = simulated log |
 | Audit | Every proposal/gate/execute/outcome appended |
 | Eval | Batch job comparing Baseline A vs Rebound |
@@ -53,7 +53,7 @@
 
 - [ ] `docker`/local one-command or documented `make`/`scripts` run  
 - [ ] Seed batch → Rebound decisions visible in UI  
-- [ ] At least one Payment Link created in test-mode **or** explicit dry-run mode with screenshot  
+- [ ] At least one Payment Link created in MVP mode (Razorpay Test Mode) **or** explicit dry-run mode with screenshot
 - [ ] Eval page shows lift (even if lift ≤ 0 — honest)  
 - [ ] Audit trail for a single case shows proposal → gate → action → outcome  
 - [ ] README “Run locally” section filled  
