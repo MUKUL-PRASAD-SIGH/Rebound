@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     razorpay_webhook_secret: str = ""
     rebound_execution_mode: str = "dry_run"  # dry_run | test_mode
     rebound_enable_llm_proposer: bool = False
+    openai_api_key: str = ""
+    openai_model: str = "gpt-4o-mini"
     api_url: str = "http://localhost:8000"
     app_url: str = "http://localhost:5173"
     policy_version: str = "mvp-v1"
