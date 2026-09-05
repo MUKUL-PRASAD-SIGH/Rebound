@@ -26,7 +26,7 @@ I want the repository to answer a harder question first:
 | Preference | Technically deep end-to-end systems over UI demos |
 | Honesty rule | Never invent stats; distinguish fact / hypothesis / TODO |
 | Safety rule | LLM is never unrestricted authority over money actions |
-| Calendar | [`SCHEDULE.md`](../SCHEDULE.md) — research ends Aug 22; MVP by Aug 26; remaining build completes Sep 2; test Sep 3; submit Sep 4 |
+| Calendar | [`SCHEDULE.md`](../SCHEDULE.md) — research ends Aug 22; MVP by Aug 26; remaining build completes Sep 2; test Sep 3; submit Sep 5 |
 
 ## Anti-pattern after Aug 22
 

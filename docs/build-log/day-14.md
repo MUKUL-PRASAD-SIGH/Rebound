@@ -5,7 +5,7 @@ Polish + deployment ergonomics (local demo-ready).
 
 ## What I did
 - Root `Makefile` for API, web, seed helpers, eval, and tests
-- `docs/submission/demo-runbook.md` with Make and Windows-friendly manual start paths
+- `README.md` with Make and Windows-friendly manual start paths
 - Confirmed default modes remain dry_run / simulated
 
 ## Decisions
@@ -13,7 +13,7 @@ Polish + deployment ergonomics (local demo-ready).
 - Never require live Razorpay keys for core demo
 
 ## Evidence
-- `Makefile`, `docs/submission/demo-runbook.md`
+- `Makefile`, `README.md`
 
 ## Done
 - [x] One-command docs for demo

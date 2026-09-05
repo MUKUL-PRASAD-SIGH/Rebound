@@ -1,4 +1,4 @@
-# Build Schedule — 15 days (Aug 21 → Sep 4, 2026)
+# Build Schedule — Aug 21 → Sep 5, 2026
 
 > Bias: **build → test → iterate → polish**.  
 > Research foundation exists. After Aug 22, research only answers concrete implementation questions.
@@ -15,7 +15,7 @@
 | **Sep 1** | **1** | Days 09–12 completion sprint | ✅ Gate clarity, regression + benchmark, and sensitivity in three focused commits |
 | **Sep 2** | **1** | Days 13–15 completion sprint | ✅ Differentiation, demo runbook, submission package — **build complete** |
 | **Sep 3** | **1** | Protected test + fix day | Full demo, regression, evidence capture, necessary fixes only |
-| **Sep 4** | **1** | Final QA + submission | Submit the verified package |
+| **Sep 5** | **1** | Final QA + submission | Submit the verified package |
 
 ## Ratio (approx.)
 
@@ -54,7 +54,7 @@
 | **Aug 25 — Intelligence** | Models / agent / tooling / policy proposal | Decision path produces structured actions |
 | **Aug 26 — Integration** | Connect rails → deployable MVP | **Ugly but working** end-to-end |
 
-After Aug 26: remaining milestones are compacted into the Sep 1–2 completion sprint; Sep 3 is protected for verification and Sep 4 for submission.
+After Aug 26: remaining milestones are compacted into the Sep 1–2 completion sprint; Sep 3 is protected for verification and Sep 5 for submission.
 
 ---
 
@@ -82,6 +82,6 @@ After Aug 26: remaining milestones are compacted into the Sep 1–2 completion s
 | **Sep 1** | **DONE** — Days 09–12: gate clarity, regression + benchmark evidence, and sensitivity notes |
 | **Sep 2** | **DONE** — Days 13–15: differentiation, demo polish, and submission package; build complete |
 | **Sep 3** | **No planned feature work** — run the full demo, regression suite, connection checks, capture evidence, and fix only verified issues |
-| **Sep 4** | Final checklist, video, public/package checks, then submit |
+| **Sep 5** | Final checklist, video, public/package checks, then submit |
 
 Architecture: [`architecture/README.md`](architecture/README.md) · MVP: [`architecture/mvp-scope.md`](architecture/mvp-scope.md) · Externals: [`docs/EXTERNAL_REQUIREMENTS.md`](docs/EXTERNAL_REQUIREMENTS.md)

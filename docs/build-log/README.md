@@ -1,7 +1,7 @@
 # Build log index (day-wise)
 
 > One file per planned milestone. Mirror a short entry into root [`BUILD_LOG.md`](../../BUILD_LOG.md).
-> **Pushed through: Day 15.** The project build is complete. Sep 3 is reserved for testing and verified fixes; submission is Sep 4.
+> **Pushed through: Day 15.** The project build is complete. Sep 3 is reserved for testing and verified fixes; submission is Sep 5.
 
 | Day | Date | File | Status | Focus |
 | --- | --- | --- | --- | --- |
@@ -22,7 +22,7 @@
 | 14 | 2 Sep 2026 | [day-14.md](./day-14.md) | ✅ Complete — today commit 2/3 | Demo polish |
 | 15 | 2 Sep 2026 | [day-15.md](./day-15.md) | ✅ Complete — today commit 3/3 | Submission package / build complete |
 
-**After Day 15:** Sep 3 is a protected full-system test and fix day. Submit the verified package on Sep 4.
+**After Day 15:** Sep 3 is a protected full-system test and fix day. Submit the verified package on Sep 5.
 
 External tools checklist: [`docs/EXTERNAL_REQUIREMENTS.md`](../EXTERNAL_REQUIREMENTS.md)
 

@@ -72,7 +72,7 @@ Adopted 15-day build-heavy calendar in [`SCHEDULE.md`](SCHEDULE.md):
 - Research/design: Aug 21–22 only (2 days)
 - MVP build: Aug 23–26 (ugly but working)
 - Continuous testing during build; protected full-system validation Sep 3
-- Finish the remaining build by Sep 2; submit Sep 4
+- Finish the remaining build by Sep 2; submit Sep 5
 
 Rule after Aug 22: **research only when it answers a concrete implementation question.**
 
@@ -316,7 +316,7 @@ Compress the remaining local Day 09–15 milestones into two delivery days witho
 - **Sep 1:** Day 09–12 — gate clarity, combined regression + benchmark evidence, and sensitivity (three commits)
 - **Sep 2:** Day 13–15 — differentiation, demo polish, and submission package (three pushes; build complete)
 - **Sep 3:** protected full-system test, demo rehearsal, evidence capture, and verified fixes only
-- **Sep 4:** final QA and submission
+- **Sep 5:** final QA and submission
 
 ### Guardrail
 The historical entries above retain their original planning context. This schedule reset governs all remaining work and pushes.

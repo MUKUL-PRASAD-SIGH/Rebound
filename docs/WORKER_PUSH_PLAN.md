@@ -15,7 +15,7 @@ The remaining milestones are compressed into two delivery days, while preserving
 | **1 Sep (today)** | Day 09 → Day 12, in order | Day 09; combined Day 10–11; Day 12 (three commits) |
 | **2 Sep (tomorrow)** | Day 13 → Day 15, in order | Differentiation, demo polish, submission package — **build complete** |
 | **3 Sep** | No planned feature/documentation push | Full test, demo rehearsal, evidence capture, verified-fix commits only |
-| **4 Sep** | Submission | Submit the verified package |
+| **5 Sep** | Submission | Submit the verified package |
 
 If the operator asks to push **“today”**, continue with the first unpushed item in this sequence: Day 09, combined Day 10–11, then Day 12. If they ask to push **“tomorrow”**, use the Day 13–15 sequence only after Day 09–12 are pushed. “Next” means the first unpushed item in this order.
 
@@ -85,7 +85,7 @@ docs/build-log/README.md
 
 - `Makefile`
 - `docs/build-log/day-07.md` … `day-15.md`
-- `docs/submission/`
+- `README.md`
 - `evidence/benchmarks/`
 
 Note: `main.py` also contains batch decide + `/audit/recent`. That is acceptable in Day 06 because the eval/outcome loop needs those routes to demo. Do **not** split `main.py` across days.
@@ -240,7 +240,7 @@ Commit: `docs: Day 13 differentiation — stop and lift vs retry bots`
 
 ```
 Makefile
-docs/submission/demo-runbook.md
+README.md
 docs/build-log/day-14.md
 BUILD_LOG.md
 docs/build-log/README.md
@@ -255,8 +255,7 @@ Commit: `chore: Day 14 Makefile and local demo runbook`
 **When:** 2 Sep (tomorrow), push 3 of 3 / “push day 15” / “push submit docs”. Complete this package before the protected Sep 3 test day.
 
 ```
-docs/submission/checklist.md
-docs/submission/video-script.md
+README.md
 docs/build-log/day-15.md
 BUILD_LOG.md
 README.md
