@@ -2,6 +2,7 @@
 
 [![Track](https://img.shields.io/badge/Track-03%20AI%20Revenue%20Recovery-0A2540?style=for-the-badge)](https://razorpay.com/buildathon/)
 [![Status](https://img.shields.io/badge/Status-Demo--ready%20MVP-2E7D32?style=for-the-badge)](#validation-and-scope)
+[![MVP Mode](https://img.shields.io/badge/MVP%20Mode-Razorpay%20Test%20Mode-136FEC?style=for-the-badge)](#mvp-mode-functional-testing-without-production-money)
 [![Stack](https://img.shields.io/badge/Stack-FastAPI%20%C2%B7%20ML%20%C2%B7%20React-136FEC?style=for-the-badge)](#technology)
 
 <p align="center">
@@ -109,6 +110,20 @@ The current backend regression suite passes; the release record also contains a 
 - MVP-mode and synthetic outcomes are always labelled honestly; simulated ₹ are not real revenue.
 
 Security design and verification notes: [security posture](docs/SECURITY.md).
+
+### Cybersecurity research summary
+
+Rebound’s controls were designed against the [OWASP API Security Top 10](https://owasp.org/www-project-api-security/), the [OWASP Secrets Management Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html), and Razorpay’s [webhook validation and idempotency guidance](https://razorpay.com/docs/webhooks/validate-test/?preferred-country=IN). The resulting MVP controls are deliberately concrete:
+
+| Research concern | Rebound response |
+| --- | --- |
+| Unauthorised API access and object exposure | A local operator token protects every non-webhook route; the UI never receives raw customer references. |
+| Excessive data exposure | Customer references are HMAC-pseudonymised; audit and Razorpay responses are redacted or field-allowlisted before reaching the dashboard. |
+| Secret leakage | Keys remain in the untracked local `.env`; the browser never embeds or displays them, and the release checklist scans tracked files. |
+| Forged or duplicate payment events | Razorpay webhook HMAC is verified against the raw body and the unique event ID is deduplicated. |
+| Unsafe third-party payment calls | Live Razorpay keys are rejected; only allowlisted Test Mode operations are available in MVP mode. |
+
+This is security-focused MVP engineering, not a production-security certification. The full research-to-control mapping, verification evidence, and remaining production controls are in [docs/SECURITY.md](docs/SECURITY.md).
 
 ---
 
