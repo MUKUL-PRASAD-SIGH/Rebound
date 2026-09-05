@@ -32,6 +32,28 @@
 | Audit trail | Records the score, proposal, policy decision, execution, and outcome for every case. |
 | Private operator dashboard | A polished, payment-operations interface inspired by familiar Razorpay workflow patterns—without copying Razorpay branding or exposing customer data. |
 
+## Users and user stories
+
+Rebound is built for the person who opens a recovery queue each morning and must decide what should happen next—not merely for someone looking at a payment dashboard. Its primary workflow is: **prioritise money at risk → choose an intervention (or stop) → apply controls → review the result**.
+
+| Persona | Job to be done | How the MVP helps |
+| --- | --- | --- |
+| Payment / Revenue Operations Manager | Focus the team on failed payments that are worth recovering. | Ranks the recovery queue using recoverability and expected value. |
+| Recovery Operations Analyst | Decide the most appropriate next action for each case. | Recommends retry, Payment Link, update-method outreach, escalation, or `stop`, then shows the policy result. |
+| Merchant / Finance Manager | Establish whether a recovery policy adds value beyond the current approach. | Compares Rebound with fixed baselines on the same portfolio using a paired simulated net-value delta. |
+
+### MVP user stories
+
+1. **Prioritise recovery work** — *As a payment operations manager, I want failed-payment cases ranked by expected recovery value so that the team works on the most valuable opportunities first.*
+2. **Choose a proportionate action** — *As a recovery analyst, I want a recommendation to retry, send a Payment Link, request a payment-method update, escalate, or stop so that each case gets the most appropriate intervention.*
+3. **Know when not to act** — *As a merchant, I want Rebound to identify recovery attempts that are economically irrational so that I avoid unnecessary cost and customer friction.* The first-class `stop` decision is central to Rebound's differentiation.
+4. **Keep AI money-adjacent actions bounded** — *As a risk-conscious operator, I want every AI proposal to pass deterministic policy checks before execution so that a model cannot independently trigger an unsafe action.*
+5. **Explain each decision** — *As an operations manager, I want to see why an action was proposed, approved, rejected, or stopped so that I can review and trust the system.*
+6. **Handle exceptions safely** — *As a recovery team member, I want uncertain or high-value cases marked for escalation so that they can receive human review.* In this MVP, escalation is an auditable handoff signal, not an integrated staffed-workflow or approval system.
+7. **Measure incremental value** — *As a merchant, I want to compare Rebound with my existing recovery policy so that I can assess whether the new automation adds value beyond what would have happened anyway.*
+
+These stories are demonstrated on the seeded synthetic portfolio and, where configured, Razorpay Test Mode—not on production merchant outcomes.
+
 ## Why it is research-backed
 
 The research started from an uncomfortable product reality: Razorpay already offers retry rails and AI recovery capabilities. A useful build therefore cannot merely claim to “retry smarter.” Rebound is deliberately designed as the **measurable decision layer above those rails**.
@@ -99,6 +121,24 @@ This table is the honest status of the locked build path.
 
 The current backend regression suite passes; the release record also contains a passing production frontend-build check. The remaining high-value proof is one controlled Razorpay **MVP-mode** Payment Link creation/payment and a signed webhook delivery to a public test endpoint. Do not present that proof as real merchant recovery.
 
+## Future scope
+
+The MVP demonstrates a safe decision architecture; it does **not** claim the following capabilities as shipped. This is the path from a credible buildathon prototype to a merchant-ready product.
+
+| Future capability | Current boundary | What would be needed |
+| --- | --- | --- |
+| End-to-end external integration proof | Payment Link creation, status refresh, and signed-webhook reconciliation are implemented for Razorpay Test Mode, but a controlled account run has not been recorded. | Run and document an authorised Test Mode payment success/failure with a public signed-webhook delivery. |
+| Direct subscription and invoice recovery ingestion | Read-only Test Mode subscription/invoice endpoints exist, but they do not yet automatically normalise merchant objects or lifecycle events into recovery cases. | Merchant-authorised event ingestion, mapping, reconciliation, and lifecycle handling. |
+| Real customer outreach | `notify_update_method` is explicitly an audit-log simulation; Rebound does not send email, WhatsApp, voice, or SMS. | Consent-aware provider integrations, templates, opt-out handling, delivery/outcome tracking, and rate limits. |
+| Human approval operations | `escalate` records a controlled handoff signal only. There is no assignee, approval queue, SLA, or case-management integration. | Role-based approval workflows, assignment, queues, notifications, and resolution tracking. |
+| Real-data model calibration | The current scoring and evaluation are designed for a synthetic portfolio. | Consented merchant history, calibration and reliability testing, drift monitoring, and an outcome-feedback loop. |
+| Independent evidence of merchant value | `simulated_net_value_delta` is a paired synthetic measure, not production recovery uplift or ROI. | A pre-registered hold-out or controlled merchant evaluation against the merchant's existing policy. |
+| Recovery Policy Lab | The evaluator compares Rebound with fixed Baseline A and Baseline B; it is not a merchant-configurable experimentation product. | Configurable policy variants, experimentation safeguards, cohort controls, and observed-outcome analysis. |
+| Broader recovery coverage | The MVP focuses on failed-payment / recurring-style recovery cases. | Support for checkout abandonment and additional payment-lifecycle signals after validating the core workflow. |
+| Production operation and live execution | Live Razorpay keys and production actions are deliberately rejected; the app is local, single-operator, and Test Mode first. | Merchant authorisation, multi-tenant RBAC/SSO, managed secrets, durable storage, monitoring, incident controls, privacy/compliance review, and change management before any live action. |
+
+Until those items are complete, Rebound should be described as **a safe, measurable decision architecture for payment recovery**, not as proven production recovery automation or real merchant ROI.
+
 ## Safety and secrets
 
 - Never commit `.env`, API keys, webhook secrets, or personal data.
@@ -144,7 +184,9 @@ Before starting, copy `.env.example` to `.env` and replace the two `REBOUND_...`
 python -c "import secrets; print(secrets.token_urlsafe(32))"
 ```
 
-Use the first value for `REBOUND_API_TOKEN` and the second for `REBOUND_PII_HASH_SALT`. On first opening Rebound, enter the operator token into the private access screen. It remains only for the current browser session.
+Use the first value for `REBOUND_API_TOKEN` and the second for `REBOUND_PII_HASH_SALT`.
+
+> **Operator access token:** Rebound does not provide a default token. The value you set for `REBOUND_API_TOKEN` in your local `.env` is the token requested by the private access screen. After starting the app, copy that exact value into **Operator access token**. It remains only for the current browser session; do not commit or share your `.env` file.
 
 Use two terminals from the repository root:
 

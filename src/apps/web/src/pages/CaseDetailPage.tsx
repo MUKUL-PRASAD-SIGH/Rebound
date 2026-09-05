@@ -115,10 +115,10 @@ export default function CaseDetailPage() {
     <section className="page-stack">
       <header className="page-header page-header--compact">
         <div>
-          <Link className="back-link" to="/cases"><Icon name="arrow-right" size={15} /> Back to recovery queue</Link>
-          <span className="eyebrow"><Icon name="cases" size={14} /> Case workspace</span>
+          <Link className="back-link" to="/cases"><Icon name="arrow-right" size={15} /> Back to recovery</Link>
+          <span className="eyebrow"><Icon name="cases" size={14} /> Recovery case</span>
           <h1>{caseRow ? <code>{caseRow.case_key}</code> : "Case detail"}</h1>
-          <p>{caseRow ? "Review the decision context, then take a policy-controlled action." : "Loading decision context…"}</p>
+          <p>{caseRow ? "Review the payment, recovery assessment, and recommended next action." : "Loading decision context…"}</p>
         </div>
         {caseRow ? <StatusPill tone={statusTone(caseRow.status)}>{titleCase(caseRow.status)}</StatusPill> : null}
       </header>
@@ -129,17 +129,17 @@ export default function CaseDetailPage() {
         <>
           <section className="case-summary">
             <div className="case-amount">
-              <span>Revenue at risk</span>
+              <span>Payment</span>
               <strong>{formatCurrency(caseRow.amount_paise)}</strong>
               <small>{titleCase(caseRow.currency)} · {titleCase(caseRow.method)}</small>
             </div>
             <dl className="detail-grid">
-              <div><dt>Failure signal</dt><dd>{titleCase(caseRow.failure_class)}</dd></div>
+              <div><dt>Failure reason</dt><dd>{titleCase(caseRow.failure_class)}</dd></div>
+              <div><dt>Payment method</dt><dd>{titleCase(caseRow.method)}</dd></div>
               <div><dt>Attempt</dt><dd>#{caseRow.attempt_n}</dd></div>
-              <div><dt>Account data</dt><dd>Protected</dd></div>
               <div><dt>Tenure</dt><dd>{caseRow.tenure_days ?? "—"} days</dd></div>
-              <div><dt>Latest action</dt><dd>{titleCase(caseRow.latest_decision_action)}</dd></div>
-              <div><dt>Gate outcome</dt><dd>{titleCase(caseRow.latest_gate_result)}</dd></div>
+              <div><dt>Recommended action</dt><dd>{titleCase(caseRow.latest_decision_action) === "—" ? "Preview to assess" : titleCase(caseRow.latest_decision_action)}</dd></div>
+              <div><dt>Policy decision</dt><dd>{titleCase(caseRow.latest_gate_result)}</dd></div>
             </dl>
           </section>
 
@@ -147,23 +147,23 @@ export default function CaseDetailPage() {
             <section className="card decision-card">
               <div className="section-heading">
                 <div>
-                  <span className="eyebrow eyebrow--muted">Policy-controlled action</span>
-                  <h2>Decide the next best step</h2>
+                  <span className="eyebrow eyebrow--muted">Recovery assessment</span>
+                  <h2>Recommended action</h2>
                 </div>
                 <span className="decision-card__badge"><Icon name="shield" size={15} /> Guardrails on</span>
               </div>
-              <p className="section-copy">Rebound scores this case, proposes a bounded action, and enforces confidence, value, and retry limits before execution.</p>
+              <p className="section-copy">Preview the expected value and recovery likelihood before executing an approved action.</p>
               <div className="action-buttons">
                 <button className="button button--ghost" disabled={busy !== null} onClick={() => void onDecide(false)} type="button">
                   {busy === "decide" ? <Icon className="spin" name="refresh" size={16} /> : <Icon name="spark" size={16} />}
-                  {busy === "decide" ? "Deciding…" : "Preview decision"}
+                  {busy === "decide" ? "Assessing…" : "Preview recommendation"}
                 </button>
                 <button className="button button--primary" disabled={busy !== null} onClick={() => void onDecide(true)} type="button">
                   {busy === "decide-execute" ? <Icon className="spin" name="refresh" size={16} /> : <Icon name="play" size={16} />}
-                  {busy === "decide-execute" ? "Running…" : "Decide & execute"}
+                  {busy === "decide-execute" ? "Running…" : "Execute recovery action"}
                 </button>
                 <button className="text-button" disabled={busy !== null} onClick={() => void onExecute()} type="button">
-                  {busy === "execute" ? "Executing…" : "Execute latest"} <Icon name="arrow-right" size={15} />
+                  {busy === "execute" ? "Executing…" : "Execute latest decision"} <Icon name="arrow-right" size={15} />
                 </button>
               </div>
 
@@ -172,7 +172,7 @@ export default function CaseDetailPage() {
                   <div className="decision-result__head"><Icon name="check" size={17} /><strong>Decision recorded</strong><StatusPill tone={lastDecide.gate_result === "allow" ? "good" : "warn"}>{titleCase(lastDecide.gate_result)}</StatusPill></div>
                   <p><code>{titleCase(lastDecide.proposed_action)}</code><Icon name="arrow-right" size={15} /><code>{titleCase(lastDecide.gated_action)}</code></p>
                   <dl><div><dt>Expected value</dt><dd>{lastDecide.ev.toFixed(1)}</dd></div><div><dt>Confidence</dt><dd>{(lastDecide.confidence * 100).toFixed(0)}%</dd></div><div><dt>Reason</dt><dd>{titleCase(lastDecide.gate_reason)}</dd></div></dl>
-                  <small>{lastDecide.rationale}</small>
+                  <small><strong>Why this action?</strong> {lastDecide.rationale}</small>
                 </div>
               ) : null}
 
@@ -190,17 +190,18 @@ export default function CaseDetailPage() {
             </section>
 
             <aside className="card policy-card">
-              <span className="eyebrow eyebrow--muted">Why the policy matters</span>
-              <h2>Safe by default</h2>
-              <div className="policy-card__item"><Icon name="shield" size={17} /><span><strong>Value floor</strong><small>Negative EV routes stop, not spend.</small></span></div>
-              <div className="policy-card__item"><Icon name="warning" size={17} /><span><strong>Human escalation</strong><small>High-value uncertainty is surfaced.</small></span></div>
-              <div className="policy-card__item"><Icon name="audit" size={17} /><span><strong>Audit evidence</strong><small>Every decision is traceable below.</small></span></div>
+              <span className="eyebrow eyebrow--muted">Decision flow</span>
+              <h2>From assessment to outcome</h2>
+              <div className="policy-card__item"><Icon name="activity" size={17} /><span><strong>Scoring</strong><small>Estimate recovery likelihood and expected value.</small></span></div>
+              <div className="policy-card__item"><Icon name="spark" size={17} /><span><strong>Recommendation</strong><small>Choose the best bounded action for this case.</small></span></div>
+              <div className="policy-card__item"><Icon name="shield" size={17} /><span><strong>Policy check</strong><small>Allow, stop, or escalate before execution.</small></span></div>
+              <div className="policy-card__item"><Icon name="audit" size={17} /><span><strong>Recorded outcome</strong><small>Review the complete event history below.</small></span></div>
             </aside>
           </div>
 
           <section className="card data-card audit-card">
             <div className="table-toolbar">
-              <div><span className="eyebrow eyebrow--muted">Append-only record</span><h2>Case audit trail</h2></div>
+              <div><span className="eyebrow eyebrow--muted">Full evidence</span><h2>Case activity</h2></div>
               <span className="record-count">{audit.length} events</span>
             </div>
             {audit.length ? (

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { getRecentAudit, type AuditEvent } from "../api";
-import { EmptyState, Icon, StatusPill, titleCase } from "../ui";
+import { getRecentAudit, listCases, type AuditEvent, type CaseRow } from "../api";
+import { EmptyState, formatCurrency, Icon, StatusPill, titleCase } from "../ui";
 
 const displayableContext = new Set([
   "action",
@@ -22,8 +22,22 @@ function eventSummary(payload: Record<string, unknown>): string {
   return entries.map(([key, value]) => `${titleCase(key)}: ${String(value)}`).join(" · ");
 }
 
+function statusTone(status: string | undefined): "good" | "neutral" | "warn" {
+  if (status === "recovered") return "good";
+  if (status === "stopped") return "neutral";
+  return "warn";
+}
+
+type ActivityGroup = {
+  id: string;
+  caseId: string;
+  caseRow?: CaseRow;
+  events: AuditEvent[];
+};
+
 export default function AuditPage() {
   const [events, setEvents] = useState<AuditEvent[]>([]);
+  const [cases, setCases] = useState<CaseRow[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -31,7 +45,9 @@ export default function AuditPage() {
     setLoading(true);
     setError("");
     try {
-      setEvents(await getRecentAudit());
+      const [auditEvents, caseRows] = await Promise.all([getRecentAudit(), listCases()]);
+      setEvents(auditEvents);
+      setCases(caseRows);
     } catch (requestError) {
       setError(String(requestError));
     } finally {
@@ -44,48 +60,76 @@ export default function AuditPage() {
   }, [refresh]);
 
   const uniqueCases = useMemo(() => new Set(events.map((event) => event.case_id)).size, [events]);
-  const outcomeEvents = events.filter((event) => event.kind === "outcome").length;
+  const executedEvents = events.filter((event) => event.kind === "executed").length;
+  const policyBlocks = events.filter((event) => event.kind === "gated" && event.payload.gate_result !== "allow").length;
+  const caseById = useMemo(() => new Map(cases.map((caseRow) => [caseRow.id, caseRow])), [cases]);
+  const groupedActivity = useMemo(() => {
+    const groups = new Map<string, ActivityGroup>();
+    for (const event of events) {
+      const decisionId = typeof event.payload.decision_id === "string" ? event.payload.decision_id : "intake";
+      const groupId = `${event.case_id}:${decisionId}`;
+      const existing = groups.get(groupId);
+      if (existing) {
+        existing.events.push(event);
+      } else {
+        groups.set(groupId, { id: groupId, caseId: event.case_id, caseRow: caseById.get(event.case_id), events: [event] });
+      }
+    }
+    return [...groups.values()];
+  }, [caseById, events]);
 
   return (
     <section className="page-stack">
       <header className="page-header">
         <div>
-          <span className="eyebrow"><Icon name="audit" size={14} /> Decision evidence</span>
-          <h1>Audit trail</h1>
-          <p>An append-only record of the context, policy decisions, execution, and outcomes behind every recovery action.</p>
+          <span className="eyebrow"><Icon name="audit" size={14} /> Activity</span>
+          <h1>Activity</h1>
+          <p>A complete record of recovery decisions and execution events.</p>
         </div>
         <button className="button button--ghost" disabled={loading} onClick={() => void refresh()} type="button">
-          <Icon className={loading ? "spin" : undefined} name="refresh" size={16} /> {loading ? "Refreshing…" : "Refresh record"}
+          <Icon className={loading ? "spin" : undefined} name="refresh" size={16} /> {loading ? "Refreshing…" : "Refresh activity"}
         </button>
       </header>
 
       <div className="summary-strip">
         <div><span>Recent events</span><strong>{events.length}</strong></div>
-        <div><span>Cases covered</span><strong>{uniqueCases}</strong></div>
-        <div><span>Outcome records</span><strong>{outcomeEvents}</strong></div>
-        <div><span>Record type</span><strong className="summary-strip__text">Append-only</strong></div>
+        <div><span>Cases tracked</span><strong>{uniqueCases}</strong></div>
+        <div><span>Actions executed</span><strong>{executedEvents}</strong></div>
+        <div><span>Policy blocks</span><strong>{policyBlocks}</strong></div>
       </div>
 
       {error ? <div className="notice notice--error"><Icon name="warning" size={18} /><span>{error}</span></div> : null}
 
-      <section className="card data-card audit-card">
+      <section className="card activity-card">
         <div className="table-toolbar">
-          <div><span className="eyebrow eyebrow--muted">Latest activity</span><h2>Recovery decision log</h2></div>
-          <StatusPill tone="good"><span className="live-dot" /> IMMUTABLE HISTORY</StatusPill>
+          <div><span className="eyebrow eyebrow--muted">Latest activity</span><h2>Recovery decision summaries</h2></div>
+          <StatusPill tone="good"><span className="live-dot" /> IMMUTABLE EVENT LOG</StatusPill>
         </div>
-        {events.length ? (
-          <div className="table-scroll">
-            <table className="data-table audit-table">
-              <thead><tr><th>Timestamp</th><th>Case</th><th>Event</th><th>Recorded context</th></tr></thead>
-              <tbody>{events.map((event) => (
-                <tr key={event.id}>
-                  <td className="time-cell">{new Date(event.created_at).toLocaleString()}</td>
-                  <td><Link className="case-link" to={`/cases/${event.case_id}`}><code>{event.case_id.slice(0, 8)}</code><Icon name="chevron-right" size={14} /></Link></td>
-                  <td><span className="event-label"><span className="event-label__dot" />{titleCase(event.kind)}</span></td>
-                  <td><span className="payload-code">{eventSummary(event.payload)}</span></td>
-                </tr>
-              ))}</tbody>
-            </table>
+        {groupedActivity.length ? (
+          <div className="activity-list">
+            {groupedActivity.map((group) => {
+              const action = group.caseRow?.latest_decision_action;
+              const latestEvent = group.events[0];
+              return <article className="activity-group" key={group.id}>
+                <header className="activity-group__head">
+                  <div>
+                    <Link className="case-link" to={`/cases/${group.caseId}`}><code>{group.caseRow?.case_key ?? group.caseId.slice(0, 8)}</code><Icon name="chevron-right" size={14} /></Link>
+                    <span>{group.caseRow ? formatCurrency(group.caseRow.amount_paise) : "Protected case"}</span>
+                  </div>
+                  <StatusPill tone={statusTone(group.caseRow?.status)}>{action ? titleCase(action) : titleCase(latestEvent.kind)}</StatusPill>
+                </header>
+                <div className="activity-timeline">
+                  {group.events.slice().reverse().map((event) => (
+                    <div className="activity-event" key={event.id}>
+                      <span className="event-label"><span className="event-label__dot" />{titleCase(event.kind)}</span>
+                      <span className="payload-code">{eventSummary(event.payload)}</span>
+                      <time>{new Date(event.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</time>
+                    </div>
+                  ))}
+                </div>
+                <Link className="activity-group__link" to={`/cases/${group.caseId}`}>View full evidence <Icon name="arrow-right" size={15} /></Link>
+              </article>;
+            })}
           </div>
         ) : !loading && !error ? <EmptyState detail="Recovery decisions, policy gates, execution attempts, and outcomes will appear here as the queue runs." icon="audit" title="No audit events yet" /> : null}
       </section>

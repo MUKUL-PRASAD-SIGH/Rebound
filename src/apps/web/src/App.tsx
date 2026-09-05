@@ -9,10 +9,10 @@ import { clearOperatorToken, getMetrics, getOperatorToken, setOperatorToken } fr
 import { Icon, type IconName } from "./ui";
 
 const navigation: { label: string; to: string; icon: IconName }[] = [
-  { label: "Overview", to: "/", icon: "dashboard" },
-  { label: "Recovery queue", to: "/cases", icon: "cases" },
-  { label: "Evaluation", to: "/eval", icon: "chart" },
-  { label: "Audit trail", to: "/audit", icon: "audit" },
+  { label: "Operations", to: "/", icon: "dashboard" },
+  { label: "Recovery", to: "/cases", icon: "cases" },
+  { label: "Insights", to: "/eval", icon: "chart" },
+  { label: "Activity", to: "/audit", icon: "audit" },
 ];
 
 export default function App() {
@@ -86,19 +86,18 @@ export default function App() {
 
         <div className="sidebar__footer">
           <div className="system-card">
-            <div className="system-card__line"><span className="live-dot" /> System ready</div>
-            <p>Every action is policy-gated, privacy-minimised, and auditable.</p>
+            <div className="system-card__line"><span className="live-dot" /> System operational</div>
+            <p>Policy-controlled · Audit enabled</p>
           </div>
-          <span className="environment-label"><Icon name="shield" size={14} /> Safeguards enforced</span>
         </div>
       </aside>
 
       <div className="app-body">
         <header className="topbar">
           <div className="topbar__context">
-            <span className="topbar__eyebrow">Revenue recovery command centre</span>
+            <span className="topbar__eyebrow">Recovery operations</span>
             <span className="topbar__divider" />
-            <span>Policy-first operations</span>
+            <span>Policy mvp-v1</span>
           </div>
           <button className="topbar__lock" onClick={() => { clearOperatorToken(); setAuthorised(false); }} type="button"><Icon name="shield" size={14} /> Lock workspace</button>
         </header>

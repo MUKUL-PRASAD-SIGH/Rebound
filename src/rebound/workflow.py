@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 from dataclasses import dataclass
+from uuid import uuid4
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -38,6 +39,10 @@ class DecideResult:
 
 
 def decide_case(db: Session, case: Case, *, auto_execute: bool = False) -> DecideResult:
+    # A stable decision identifier lets the operator view group every audit event
+    # from one score → proposal → gate → execution run without weakening the
+    # append-only record.
+    decision_id = str(uuid4())
     features = extract_features(case)
     scores = score_actions(features, case.amount_paise)
     append_audit(
@@ -45,6 +50,7 @@ def decide_case(db: Session, case: Case, *, auto_execute: bool = False) -> Decid
         case.id,
         AuditKind.SCORED,
         {
+            "decision_id": decision_id,
             "features": features,
             "action_ev": {a: {"ev": s["ev"], "p": s["p_recover"]} for a, s in scores.items()},
         },
@@ -67,6 +73,7 @@ def decide_case(db: Session, case: Case, *, auto_execute: bool = False) -> Decid
         case.id,
         AuditKind.PROPOSED,
         {
+            "decision_id": decision_id,
             "action": payload.action.value,
             "confidence": payload.confidence,
             "ev": payload.ev,
@@ -78,6 +85,7 @@ def decide_case(db: Session, case: Case, *, auto_execute: bool = False) -> Decid
 
     gated = gate(payload, db=db, case=case)
     decision = Decision(
+        id=decision_id,
         case_id=case.id,
         proposal_id=proposal.id,
         action=gated.action.value,
@@ -92,6 +100,7 @@ def decide_case(db: Session, case: Case, *, auto_execute: bool = False) -> Decid
         case.id,
         AuditKind.GATED,
         {
+            "decision_id": decision_id,
             "gate_result": gated.gate_result.value,
             "action": gated.action.value,
             "reason": gated.reason,
@@ -109,7 +118,7 @@ def decide_case(db: Session, case: Case, *, auto_execute: bool = False) -> Decid
     result = DecideResult(
         case_id=case.id,
         proposal_id=proposal.id,
-        decision_id=decision.id,
+        decision_id=decision_id,
         proposed_action=payload.action.value,
         gated_action=gated.action.value,
         gate_result=gated.gate_result.value,
@@ -205,6 +214,7 @@ def _record_outcome(
         case.id,
         AuditKind.OUTCOME,
         {
+            "decision_id": attempt.decision_id,
             "result": result,
             "value_paise": value,
             "label": label,
@@ -254,6 +264,7 @@ def _execute(
         case.id,
         AuditKind.EXECUTED,
         {
+            "decision_id": decision.id,
             "action": action.value,
             "mode": exec_result.mode,
             "response": exec_result.response,

@@ -137,6 +137,7 @@ def reconcile_payment_link_state(
         case.id,
         AuditKind.OUTCOME,
         {
+            "decision_id": attempt.decision_id,
             "source": source,
             "event_id": event_id,
             "event_type": f"payment_link.{status}",
